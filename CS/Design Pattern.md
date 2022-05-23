@@ -3,7 +3,6 @@
      
    
 ## 싱글톤 패턴
-___
 하나의 클래스에 오직 하나의 인스턴스만 가지는 패턴   
 보통 데이터베이스 연결 모듈에 많이 사용   
 - 장점
@@ -12,6 +11,7 @@ ___
 - 단점
     - 싱글톤 인스턴스 하나가 너무 많은 일, 데이터를 공유할 경우 다른 인스턴스 간의 결합도가 높아짐 (DI: Deplendency Injection)
     - 동기화 처리가 되어있지 않으면 인스턴스가 두 개 생성된다든지 오류가 발생할 수 있음
+    - 객체 지향 프로그래밍의 의도와 맞지 않음 ([SOLID](#solid))
 
 ```java
 class Singleton{
@@ -27,3 +27,37 @@ class Singleton{
     }
 }
 ```
+   
+        
+#### SOLID
+유지보수가 쉽고, 유연하고, 확장이 쉬운 소프트웨어를 만들기 위한 원칙   
+참고: https://www.nextree.co.kr/p6960/
+1. 단일 책임의 원칙 (SRG, Single Responsibility Principle)
+    - 모든 클래스는 하나의 기능만을 가지며, 모든 서비스는 하나의 책임을 수행하는 데 집중해야 한다.
+    - 클래스 하나에 많은 내용이 포함되어 있다면 다른 책임에 의한 변경이 불가피해진다.   
+    - 적) 클래스 이름을 보았을 때 이 클래스의 책임이 명확하게 드러나야한다.
+    
+2. 개방폐쇄의 원칙 (OCP, Open Close Principle)
+    - 소프트웨어의 구성요소(Component, Class, Method)는 확장에 열려있고, 변경에 닫혀있어야한다.
+    - 요구사항의 변경이 자주 발생하더라도 기존 구성요소는 수정이 일어나지 말아야하며, 기존 구성요소를 쉽게 확장해서 재사용할 수 있어야 한다.
+    - 예) 클래스의 공통되며 변하지 않는 속성들을 Interface로 정의하여 확장해나간다.
+    - 적) Interface는 가능하면 변경되어서는 되지 않는다. 경우의 수에 대한 고려와 예측이 필요하다.
+
+3. 리스코프 치환 원칙 (LSP, Liskov Substitution Principle)
+    - 부모 객체에 자식 객체를 넣어도 시스템이 문제없이 동작하게 만드는 것을 의미.
+    - 다형성과 확장성을 극대화하려면 하위 클래스를 사용하는 것보다는 상위 클래스(Interface)를 사용하는 것이 더 좋다.
+    - 적) https://steady-coding.tistory.com/383
+
+    ``` java
+    public static void main(String[] args) {
+		modify(new LinkedList());
+		modify(new HashSet());
+	}
+	
+    // Collection은 LinkedList와 HashSet의 상위 클래스이기 때문에 모두 받을 수 있다.
+	public static void modify(Collection list) { 
+		list.add(3);
+	}
+    ```
+
+
