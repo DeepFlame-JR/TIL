@@ -22,10 +22,16 @@ list.map(_>=3).reduceleft(_+_) // 12
 설계에 많은 시간이 소요되며 처리 속도가 상대적으로 느리다.
 
 ### 특징
-- 추상화: 복잡한 시스템에서 핵심적인 개념 또는 기능을 간추려내는 것 (어떤 하위클래스들에 존재하는 공통적인 메소드를 인터페이스로 정의하는 것)
-- 캡슐화: 비슷한 역할을 하는 속성과 메소드를 하나의 클래스로 모으고, 캡슐 내부 로직이나 변수들을 감추고 외부에는 기능만을 제공하는 **정보 은닉** 개념 포함
-- 상속성: 상위 클래스의 특성을 이어받아 재사용하거나 추가, 확장하는 것 (코드 재사용, 계층 관계 생성, 유지보수에서 장점을 가짐)
-- 다형성: 하나의 메서드나 클래스가 다양한 방법으로 동작하는 것 (오버로딩, 오버라이딩)
+- 추상화   
+    복잡한 시스템에서 핵심적인 개념 또는 기능을 간추려내는 것    
+    어떤 하위클래스들에 존재하는 공통적인 메소드를 인터페이스로 정의하는 것
+- 캡슐화   
+    비슷한 역할을 하는 속성과 메소드를 하나의 클래스로 모으고, 캡슐 내부 로직이나 변수들을 감추고 외부에는 기능만을 제공하는 **정보 은닉** 개념 포함
+- 상속성  
+    상위 클래스의 특성을 이어받아 재사용하거나 추가, 확장하는 것  
+    코드 재사용, 계층 관계 생성, 유지보수에서 장점을 가짐
+- 다형성    
+    하나의 메서드나 클래스가 다양한 방법으로 동작하는 것 (오버로딩, 오버라이딩)
 ```java
     // 오버로딩
     // 매개변수에 따라서 여러 개 둘 수 있다.
@@ -58,7 +64,7 @@ list.map(_>=3).reduceleft(_+_) // 12
 참고: https://www.nextree.co.kr/p6960/
 1. 단일 책임의 원칙 (SRG, Single Responsibility Principle)
     - 모든 클래스는 하나의 기능만을 가지며, 모든 서비스는 하나의 책임을 수행하는 데 집중해야 한다.
-    - 클래스 하나에 많은 내용이 포함되어 있다면 다른 책임에 의한 변경이 불가피해진다.   
+    - 클래스 하나에 많은 내용이 포함되어 있다면 다른 책임에 의한 변경이 불가피해지고, 의존성이 생긴다. 
     - 주의) 클래스 이름을 보았을 때 이 클래스의 책임이 명확하게 드러나야한다.
     
 2. 개방폐쇄의 원칙 (OCP, Open Close Principle)
@@ -66,6 +72,51 @@ list.map(_>=3).reduceleft(_+_) // 12
     - 요구사항의 변경이 자주 발생하더라도 기존 구성요소는 수정이 일어나지 말아야하며, 기존 구성요소를 쉽게 확장해서 재사용할 수 있어야 한다.
     - 예) 클래스의 공통되며 변하지 않는 속성들을 Interface로 정의하여 확장해나간다.
     - 주의) Interface는 가능하면 변경되어서는 되지 않는다. 경우의 수에 대한 고려와 예측이 필요하다.
+    ```java
+        // 잘못된 예시
+        // 이 함수는 기능을 확장하기 위해서 코드 수정이 지속적으로 필요하다
+        public boolean purchase(Object card, String name, int price)
+        {
+            boolean result;
+            switch (card.toUpperCase())
+            {
+                case "A" -> result = ((CardA) card).send(price);
+                case "B" -> result = ((CardB) card).send(price);
+                case "C" -> result = ((CardC) card).send(price);
+                
+                default -> {
+                    System.out.println("유효하지 않은 카드사");
+                    result = false;
+                }
+            }
+            
+            return result;
+        }
+        
+        // 리팩토링
+        // 예시 2
+        public interface Purchasable
+        {
+            boolean send(int price);
+        }
+        
+        class CardA implements Purchasable
+        {
+            @Override
+            public boolean send(int price)
+            {
+                System.out.println(getClass().getSimpleName() + " " + price + "원 결제 요청");
+                return true;
+            }
+        }
+        
+        // Purchasable 인터페이스를 사용하여 카드가 추가되더라도 코드의 변경이 필요하지 않다.
+        public boolean purchase(Purchasable purchasable, int price)
+        {
+            return purchasable.send(price);
+        }
+    ```
+
 
 3. 리스코프 치환 원칙 (LSP, Liskov Substitution Principle)
     - 부모 객체에 자식 객체를 넣어도 시스템이 문제없이 동작하게 만드는 것을 의미한다.
@@ -129,6 +180,14 @@ list.map(_>=3).reduceleft(_+_) // 12
     }
     ```
 
+4. 인터페이스 분리 원칙 (ISP, Interface Segregation Principle)
+    - 객체는 자신이 호출하지 않는 메소드에 의존하지 않아야하는 원칙.
+    - 그렇게 하기 위해서는 하나의 일반적인 Interface보다 서로 다른 성격의 Interface를 명백히 분리하여, 여러 개의 Interface를 만들어야 한다.
+    
+5. 의존성 역전의 원칙 (DIP, Dependency Inversion Principle)
+    - 객체는 저수준 모듈보다 고수준 모듈에 의존해야하는 원칙.
+    - 저수준에 많은 양의 변화가 생길 시, 코드 변화가 많이 일어나야 한다. But 고수준에서 변화는 저수준에 변화가 반영되기에 코드의 확장성 및 재사용성이 늘어난다.
+        - 타이어를 구현하고, 스노우 타이어를 구현하고... 구현해야하는 양이 많아진다. 공통된 부분은 interface로 묶어 고수준으로 관리하자.
 
 # 디자인 패턴
 프로그램을 설계할 때 발생했던 문제들을 해결할 수 있도록 하나의 '규약' 형태로 만들어 놓은 것을 의미
