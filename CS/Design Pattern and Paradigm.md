@@ -1,3 +1,18 @@
+# 목차
+- [프로그래밍 패러다임](#프로그래밍-패러다임)
+    - [선언형과 함수형 프로그래밍](#선언형과-함수형-프로그래밍)
+    - [객체 지향 프로그래밍](#객체-지향-프로그래밍)
+        - [특징](#특징)
+        - [SOLID](#설계원칙-solid)
+- [디자인 패턴](#디자인-패턴)
+    - [생성 패턴](#생성-패턴)
+        - [싱글톤 패턴](#싱글톤-패턴)
+        - [팩토리 패턴](#팩토리-패턴)
+        - [추상 팩토리 패턴](#추상-팩토리-패턴)
+
+
+
+
 # 프로그래밍 패러다임
 프로그래밍의 관점을 갖게 하는 개발 방법론   
 
@@ -26,7 +41,8 @@ list.map(_>=3).reduceleft(_+_) // 12
     복잡한 시스템에서 핵심적인 개념 또는 기능을 간추려내는 것    
     어떤 하위클래스들에 존재하는 공통적인 메소드를 인터페이스로 정의하는 것
 - 캡슐화   
-    비슷한 역할을 하는 속성과 메소드를 하나의 클래스로 모으고, 캡슐 내부 로직이나 변수들을 감추고 외부에는 기능만을 제공하는 **정보 은닉** 개념 포함
+    비슷한 역할을 하는 속성과 메소드를 하나의 클래스로 모으고, 캡슐 내부 로직이나 변수들을 감추고 외부에는 기능만을 제공하는 **정보 은닉** 개념 포함 (내부에 중요한 데이터를 쉽게 바꾸지 못 하도록 하기 위해 사용)  
+    접근 제어자를 통해서 이루어짐 (public, protected, default, private)  
 - 상속성  
     상위 클래스의 특성을 이어받아 재사용하거나 추가, 확장하는 것  
     코드 재사용, 계층 관계 생성, 유지보수에서 장점을 가짐
@@ -190,9 +206,18 @@ list.map(_>=3).reduceleft(_+_) // 12
         - 타이어를 구현하고, 스노우 타이어를 구현하고... 구현해야하는 양이 많아진다. 공통된 부분은 interface로 묶어 고수준으로 관리하자.
 
 # 디자인 패턴
-프로그램을 설계할 때 발생했던 문제들을 해결할 수 있도록 하나의 '규약' 형태로 만들어 놓은 것을 의미
-     
-   
+프로그램을 설계할 때 발생했던 문제들을 해결할 수 있도록 하나의 '규약' 형태로 만들어 놓은 것을 의미  
+설계자들이 **올바른**설계를 **빨리** 만들 수 있도록 도와줌  
+참고: https://readystory.tistory.com/114  
+
+## 생성 패턴
+생성 패턴은 인스턴스를 만드는 절차를 추상화하는 패턴이다.  
+객체를 생성, 합성, 표현 방법을 분리한다.  
+**이슈**  
+1. 생성 패턴은 시스템이 어떤 Class를 사용하는지에 대한 정보를 캡슐화한다.
+2. 생성 패턴은 인스턴스를 어떻게 만들고, 결합하는지에 대한 부분을 완전히 가려준다
+
+
 ## 싱글톤 패턴
 하나의 클래스에 오직 하나의 인스턴스만 가지는 패턴   
 보통 데이터베이스 연결 모듈에 많이 사용   
@@ -218,10 +243,155 @@ class Singleton{
     }
 }
 ```
-   
+
+## 팩토리 패턴
+- 객체 생성 부분을 떼어내 추상화한 패턴  
+- 여러 개의 하위 클래스를 가진 상위 클래스가 있을 때, 인풋에 따라 하위 클래스를 리턴해주는 방식
+- 하위 클래스의 인스턴스화를 제거하여 서로 간의 종속성을 낮추고, 확장을 쉽게 한다.  
+    예를들어, 아래 예제에서 Latte 클래스가 사라진다 하더라도 코드를 크게 변경하지 않아도 된다.
         
+```java
+abstract class Coffee{
+    public abstract int getPrice();
+    public String toString() {
+        return "Hi this coffe is " + this.getPrice();
+    }
+}
 
+class Latte extends Coffee{
+    private int price;
+    public Latte(int price) {
+        this.price=price;
+    }
+    @Override
+    public int getPrice() {
+        return this.price;
+    }
+}
 
+class Americano extends Coffee{
+    private int price;
+    public Americano(int price) {
+        this.price=price;
+    }
+    @Override
+    public int getPrice() {
+        return this.price;
+    }
+}
 
+// 팩토리 패턴
+class CoffeeFactory{
+    public static Coffee getCoffee(String type, int price) {
+        if("Latte".equals(type)) return new Latte(price);
+        else if("Americano".equals(type)) return new Americano(price);
+        return null;
+    }
+}
 
+CoffeeFactory.getCoffee("Latte", 100)
+```
 
+## 추상 팩토리 패턴
+- 팩토리 패턴에서는 인풋값에 따라 if-else 또는 switch를 사용하여 다양한 하위클래스를 리턴하는 형식으로 구현
+- 추상 팩토리 패턴은 **if-else 또는 switch 없이** 또 하나의 팩토리 클래스를 받아 식별한다.
+- 하위 클래스의 인스턴스화를 제거하여 서로 간의 종속성을 낮추고, 확장을 쉽게 한다.  
+    만약 Cappuccino를 추가하고자 한다면 getCoffee() 수정 없이 CappuccinoFactory만 추가하면 된다.
+```java
+// 추상 팩토리 역할을 하는 인터페이스
+interface CoffeeAbstractFactory{
+    Coffee createCoffee();
+}
+
+class LatteFactory implements CoffeeAbstractFactory{
+    private int price;
+    public LatteFactory(int price) {
+        this.price=price;
+    }
+    @Override
+    public Coffee createCoffee() {
+        return new Latte(this.price);
+    }
+}
+
+class AmericanoFactory implements CoffeeAbstractFactory{
+    private int price;
+    public AmericanoFactory(int price) {
+        this.price=price;
+    }
+    @Override
+    public Coffee createCoffee() {
+        return new Latte(this.price);
+    }
+}
+
+//  컨슈머 클래스 (서브 클래스들을 생성하기 위해 클라이언트 코드에 접점으로 제공)
+class CoffeeFactory{
+    public static Coffee getCoffee(CoffeeAbstractFactory factory) {
+        return factory.createCoffee();
+    }
+}
+
+CoffeeFactory.getCoffee(new LatteFactory(100));
+```
+
+## 빌더 패턴
+복잡한 객체를 생성시 발생하는 문제를 해결한다.
+
+앞서 팩토리 패턴, 추상 팩토리 패턴에서는 속성값이 많을 때 다양한 문제가 발생할 수 있다.
+1. 파라미터를 넘겨줄 때 타입, 순서가 복잡해짐
+1. 필요없는 파라미터들에 일일히 null 값을 넘겨줘야함
+1. 하위 클래스가 무거워짐
+
+이를 해결하기 위해 별도의 Builder 클래스를 만들어 필수 값에 대해서는 생성자를 통해서, 선택적인 값들은 메소드를 통해서 입력받아 하나의 인스턴스를 리턴한다.
+
+```java
+public class Computer {
+    //required parameters
+    private String HDD;
+    private String RAM;
+	
+    //optional parameters
+    private boolean isGraphicsCardEnabled;
+    private boolean isBluetoothEnabled;
+		
+    private Computer(ComputerBuilder builder) {
+        this.HDD=builder.HDD;
+        this.RAM=builder.RAM;
+        this.isGraphicsCardEnabled=builder.isGraphicsCardEnabled;
+        this.isBluetoothEnabled=builder.isBluetoothEnabled;
+    }
+	
+    //Builder Class
+    public static class ComputerBuilder{
+        private String HDD;
+        private String RAM;
+        private boolean isGraphicsCardEnabled;
+        private boolean isBluetoothEnabled;
+		
+        public ComputerBuilder(String hdd, String ram){
+            this.HDD=hdd;
+            this.RAM=ram;
+        }
+ 
+        public ComputerBuilder setGraphicsCardEnabled(boolean isGraphicsCardEnabled) {
+            this.isGraphicsCardEnabled = isGraphicsCardEnabled;
+            return this;
+        }
+ 
+        public ComputerBuilder setBluetoothEnabled(boolean isBluetoothEnabled) {
+            this.isBluetoothEnabled = isBluetoothEnabled;
+            return this;
+        }
+		
+        public Computer build(){
+            return new Computer(this);
+        }
+    }
+}
+
+Computer myComputer = new Computer.ComputerBuilder("500 GB", "2 GB")
+                    .setBluetoothEnabled(true)
+                    .setGraphicsCardEnabled(true)
+                    .build();
+```
