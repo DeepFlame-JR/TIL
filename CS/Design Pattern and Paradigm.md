@@ -395,3 +395,106 @@ Computer myComputer = new Computer.ComputerBuilder("500 GB", "2 GB")
                     .setGraphicsCardEnabled(true)
                     .build();
 ```
+
+## 포로토타입 패턴
+- 프로토타입은 실제 제품을 만들기 앞서 대략적인 샘플 정도를 의미
+- 객체를 생성하는 데 비용(시간과 자원)이 많이 들고, 비슷한 객체가 이미 있는 경우에 사용
+  
+DB로부터 데이터를 불러오는 행위는 비용이 크다.  
+따라서 한번 객체를 생성해서 복사하는 것이 네트워크 접근이나 DB 접근보다 훨씬 비용이 적다.
+  
+```java
+public class Employees implements Cloneable{
+ 
+    private List<String> empList;
+	
+    public Employees(List<String> list){
+        this.empList=list;
+    }
+    
+    public void loadData(){
+        // DB에서 모든 데이터를 가져온다
+        empList.add("Pankaj");
+        empList.add("Raj");
+    }
+	
+    @Override
+    public Object clone() throws CloneNotSupportedException{
+        List<String> temp = new ArrayList<String>();
+        for(String s : this.empList){
+            temp.add(s);
+        }
+        return new Employees(temp);
+    }	
+}
+
+Employees emps = new Employees();
+emps.loadData();
+Employees empsNew = (Employees) emps.clone();
+Employees empsNew1 = (Employees) emps.clone();
+```
+
+## 구조 패턴
+작은 클래스들을 상속과 합성을 이용하여 더 큰 클래스를 생성.  
+독립적으로 개발한 클래스 라이브러리를 마치 하나처럼 활용할 수 있다.  
+구조 패턴은 객체를 합성하는 방법을 제공한다.
+  
+## 어댑터 패턴
+- 클래스의 인터페이스를 사용자가 기대하는 인터페이스 형태로 변환시키는 패턴.  
+- 어댑터를 이용하면 인터페이스 호환성 문제 때문에 같이 쓸 수 없는 클래스들을 연결해서 쓸 수 있다.   
+
+```java
+public interface AudioPlayer{
+   void play(String filename);
+}
+
+public class MP3 implements AudioPlayer{
+   @Override
+   void play(String filename){
+      System.out.println("Playing MP3 File ♪ : "filename);
+   }
+}
+
+public interface VideoPlayer{
+   void play(String filename);
+}
+
+public class MP4 implements VideoPlayer{
+   @Override
+   void play(String filename){
+      System.out.println("Playing MP4 File ▶ : "filename);
+   }
+}
+
+public class MKV implements VideoPlayer{
+   @Override
+   void play(String filename){
+      System.out.println("Playing MKV File ▶ : "filename);
+   }
+}
+
+// VideoPlayer를 받아 AudioPlayer의 play함수를 활용하여 VideoPlayer의 play기능을 불러낸다.
+public class FormatAdapter implements AudioPlayer{
+   private VideoPlayer media;
+   
+   public FormatAdapter(VideoPlayer video){
+      this.media = video;
+   }
+   
+   @Override
+   void play(String filename){
+      System.out.println("Using Adapter : ");
+      media.play(filename);
+   }
+}
+
+AudioPlayer mp3Player = new MP3();
+mp3Player.play("file.mp3");
+
+mp3Player = new FormatAdapter(new MP4());
+mp3Player.play("file.mp4");
+
+mp3Player = new FormatAdapter(new MKV());
+mp3Player.play("file.mkv");
+```
+
