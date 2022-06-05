@@ -9,6 +9,11 @@
         - [싱글톤 패턴](#싱글톤-패턴)
         - [팩토리 패턴](#팩토리-패턴)
         - [추상 팩토리 패턴](#추상-팩토리-패턴)
+        - [빌더 패턴](#빌더-패턴)
+        - [프로토 타입 패턴](#프로토타입-패턴)
+    - [구조 패턴](#구조-패턴)
+        - [어댑터 패턴](#어댑터-패턴)
+        - [복합체 패턴](#복합체-패턴)
 
 
 
@@ -396,7 +401,7 @@ Computer myComputer = new Computer.ComputerBuilder("500 GB", "2 GB")
                     .build();
 ```
 
-## 포로토타입 패턴
+## 프로토타입 패턴
 - 프로토타입은 실제 제품을 만들기 앞서 대략적인 샘플 정도를 의미
 - 객체를 생성하는 데 비용(시간과 자원)이 많이 들고, 비슷한 객체가 이미 있는 경우에 사용
   
@@ -496,5 +501,95 @@ mp3Player.play("file.mp4");
 
 mp3Player = new FormatAdapter(new MKV());
 mp3Player.play("file.mkv");
+```
+
+## 복합체 패턴
+- 객체의 관계를 트리 구조로 구성하여 단일 객체와 복합 객체 모두 동일하게 다룰 수 있도록 도움
+- 그림판에서 다양한 도형을 그리고, 색을 채울 때 어떤 도형인지 구분하지 않아도 된다. 이처럼 전체 도형을 하나의 도형 다루듯이 관리할 수 있다. (**일관적 관리**)
+   
+### 오브젝트
+1. Base Component: 클라이언트가 composition 내의 오브젝트를 다루기 위해 제공되는 인터페이스
+```java
+public interface Shape {
+    public void draw(String fillColor);
+}
+```
+2. Leaf: composition 내 오브젝트들의 행동을 정의. Base Component로 구현하며, 다른 Component를 참조하면 안 된다. (단일 객체)
+```java
+public class Triangle implements Shape {
+    @Override
+    public void draw(String fillColor) {
+        System.out.println("Drawing Triangle with color "+fillColor);
+    }
+}
+
+public class Circle implements Shape {
+    @Override
+    public void draw(String fillColor) {
+        System.out.println("Drawing Circle with color "+fillColor);
+    }
+}
+```
+
+3. Composite: Leaf 객체들로 이루어져있으며 Component 내 명령들을 구현. (복합 객체)
+```java
+public class Drawing implements Shape {
+    private List<Shape> shapes = new ArrayList<Shape>();
+	
+    @Override
+    public void draw(String fillColor) {
+        for(Shape sh : shapes) {
+            sh.draw(fillColor);
+        }
+    }
+	
+    public void add(Shape s) {
+        this.shapes.add(s);
+    }
+}
+```
+
+## 프록시 패턴
+- 객체로 접근하는 것을 통제하기 위한 패턴. 그 객체의 대리자나 자리표시자의 역할을 하는 컨트롤을 제공.
+- 만약 시스템 명령어를 실행하는 객체가 있을 때, 클라이언트 프로그램이 개발자의 의도와 다른 행위를 하는 심각한 문제를 야기할 수 있음.
+
+```java
+// 커맨드를 실행하는 메소드를 들고 있는 인터페이스
+public interface CommandExecutor {
+    public void runCommand(String cmd) throws Exception;
+}
+
+public class CommandExecutorImpl implements CommandExecutor {
+    // cmd 명령어를 그대로 수행
+    @Override
+    public void runCommand(String cmd) throws IOException {
+        Runtime.getRuntime().exec(cmd);
+    }
+}
+
+// 위 클래스는 문제를 야기할 수 있기 때문에 프록스로 감싸준다. (Wrapper Class)
+public class CommandExecutorProxy implements CommandExecutor {
+    private boolean isAdmin;
+    private CommandExecutor executor;
+	
+    public CommandExecutorProxy(String user, String pwd){
+        if("correct_id".equals(user) && "correct_pwd".equals(pwd))
+            isAdmin = true;
+        executor = new CommandExecutorImpl();
+    }
+	
+    @Override
+    public void runCommand(String cmd) throws Exception {
+        if(isAdmin){
+            executor.runCommand(cmd);
+        }else{
+            if(cmd.trim().startsWith("rm")){ // Admin이 아닐 경우, 삭제 명령 불가능
+                throw new Exception("rm command is not allowed for non-admin users.");
+            }else{
+                executor.runCommand(cmd);
+            }
+        }
+    }
+}
 ```
 
