@@ -14,6 +14,7 @@
     - [구조 패턴](#구조-패턴)
         - [어댑터 패턴](#어댑터-패턴)
         - [복합체 패턴](#복합체-패턴)
+        - [프록시 패턴](#프록시-패턴)
 
 
 
@@ -593,3 +594,160 @@ public class CommandExecutorProxy implements CommandExecutor {
 }
 ```
 
+## 행동 패턴
+객체나 클래스 사이에 책임 분배에 관련된 패턴.  
+한 객체가 수행할 수 없는 작업을 여러 개의 객체로 분배하며, 객체 사이의 결합도를 최소화하는데 중점.  
+참고: https://velog.io/@ha0kim/Design-Pattern-%ED%96%89%EB%8F%99-%ED%8C%A8%ED%84%B4Behavioral-Patterns
+
+## 책임연쇄 패턴
+- 클라이언트의 요청을 처리할 수 있는 처리 객체를 집합으로 만듬. (Chain)  
+- 요청을 처리할 수 있는 객체가 여러 개일 때, 이 중 하나에게 요청을 보내려는 경우 사용.
+
+#### 장점
+1. 클라이언트가 내부 구조를 알 필요가 없다.
+1. 새로운 요청에 대한 객체 생성이 매우 편리하다.
+
+#### 단점
+1. 집합 내부 사이클이 발생할 수 있다.
+
+```java
+public interface Chain {
+    void setNext(Chain nextInChain); // chain을 연결하기 위한 함수
+    void process(Number request);
+}
+
+public class Number {
+    private int number;
+
+    public Number(int number) {
+        this.number = number;
+    }
+
+    public int getNumber() {
+        return number;
+    }
+}
+
+public class NegativeProcessor implements Chain {
+    private Chain nextInChain;
+
+    @Override
+    public void setNext(Chain nextInChain) {
+        this.nextInChain = nextInChain;
+    }
+
+    @Override
+    public void process(Number request) {
+        if (request.getNumber() < 0) {
+            System.out.println("NegativeProcessor : " + request.getNumber());
+        } else {
+            nextInChain.process(request);
+        }
+    }
+}
+
+public class PositiveProcessor implements Chain {
+    private Chain nextInChain;
+
+    @Override
+    public void setNext(Chain nextInChain) {
+        this.nextInChain = nextInChain;
+    }
+
+    @Override
+    public void process(Number request) {
+        if (request.getNumber() >= 0) {
+            System.out.println("PositiveProcessor : " + request.getNumber());
+        } else {
+            nextInChain.process(request);
+        }
+    }
+}
+
+Chain c1 = new NegativeProcessor();
+Chain c2 = new PositiveProcessor();
+c1.setNext(c2);
+
+c1.process(new Number(90)); // PositiveProcessor에서 처리 된다.
+c1.process(new Number(-50)); // NegativeProcessor에서 처리된다.
+```
+
+## 옵저버 패턴
+- 객체의 상태 변화를 관찰하는 **관찰자 객체**를 생성
+- 객체에 변화가 생기면 종속 객체들에 자동으로 변화가 통지된다.
+- 예) 새로운 파일이 추가될 때 탐색기는 다른 탐색기에 즉시 변경을 통지해야한다.
+
+#### 장점
+1. 객체 간의 결합도가 느슨해진다.
+1. 실시간으로 데이터를 효과적으로 배분할 수 있다.
+
+```java
+public interface Observer {
+    public void update(String title, String news); // 변화를 통지받는 함수
+}
+
+public interface Publisher {
+    public void registerObserver(Observer observer);
+    public void notifyObservers(); // 변화를 통지하는 함수
+}
+
+public class NewsPublisher implements Publisher{
+    private ArrayList<Observer> observers;
+    private String title;
+    private String news;
+
+    public NewsPublisher() {
+        observers = new ArrayList<>();
+        title = null;
+        news = null;
+    }
+
+    @Override
+    public void registerObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void notifyObservers() {
+        for(Observer observer : observers) {
+            observer.update(title, news);
+        }
+    }
+
+    public void setNews(String title, String news) {
+        this.title = title;
+        this.news = news;
+        notifyObservers(); // 뉴스를 설정하면 옵저버에게 통지.
+    }
+}
+
+public class NewsSubscriber implements Observer{
+    private String observerName;
+    private String news; 
+    private Publisher publisher;
+
+    public NewsSubscriber(String subscriber, Publisher publisher) {
+        this.observerName = subscriber;
+        this.publisher = publisher;
+        publisher.registerObserver(this);
+    }
+
+    @Override
+    public void update(String title, String news) {
+        this.news = title + "!!! " + news; display();
+    }
+
+    private void display() {
+        System.out.println("=== " + observerName + " 수신 내용 ===\n" + news + "\n");
+    }
+}
+
+NewsPublisher newsPublisher = new NewsPublisher();
+NewsSubscriber newsSubscriber1 = new NewsSubscriber("옵저버1", newsPublisher);
+NewsSubscriber newsSubscriber2 = new NewsSubscriber("옵저버2", newsPublisher);
+newsPublisher.setNews("특보", "옵저버 패턴이 만들어졌습니다.");
+// ===옵저버1 수신 내용 ===
+// 특보!!! 옵저버 패턴이 만들어졌습니다.
+// ===옵저버2 수신 내용 ===
+// 특보!!! 옵저버 패턴이 만들어졌습니다.
+```
