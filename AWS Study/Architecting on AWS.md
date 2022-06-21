@@ -166,7 +166,7 @@ Json 형태로 액세스 권한을 평가
 - Effect* : 정책에서 액세스를 Allow/Deny 표시
 - Principle : 계정, 사용자, 역할 또는 페더레이션 사용자로 액세스를 허용할 것인가 (리소스 정책에서만)
 - Action* : 정책이 허용하거나 거부하는 작업 목록
-- Resource* : Action이 적용되는 리소스 목록
+- Resource* : Action이 적용되는 리소스 목록 (arn: 리소스 식별)
 - Condition : 정책에서 권한을 부여하는 상황 정의
 
 ```json
