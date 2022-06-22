@@ -1,3 +1,55 @@
+# 목차
+1. [AWS Architect Basic](#aws-architect-basic)
+    - [AWS 서비스](#aws-서비스)
+    - [AWS 인프라](#aws-인프라)
+    - [AWS Well-Architected](#aws-well-architected)
+1. [계정 보안](#계정-보안)
+    * [보안 주체 (Principal)](#보안-주체-principal)
+    * [보안 정책](#보안-정책)
+    * [다중 계정 관리](#다중-계정-관리)
+1. [네트워킹](#네트워킹)
+    * [IP 주소 지정](#ip-주소-지정)
+    * [VPC](#vpc)
+    * [Transit Gateway](#transit-gateway)
+    * [하이브리드 네트워킹](#하이브리드-네트워킹)
+    * [Route 53](#route-53)
+1. [컴퓨팅](#컴퓨팅)
+    * [컴퓨팅 서비스](#컴퓨팅-서비스)
+    * [EC2 인스턴스](#ec2-인스턴스)
+    * [EC2 요금제 옵션](#ec2-요금제-옵션)
+    * [인스턴스 스토리지](#인스턴스-스토리지)
+    * [AWS 기반 HPC (High Performance Compute)](#aws-기반-hpc-high-performance-compute)
+    * [AWS Lambda](#aws-lambda)
+1. [스토리지](#스토리지)
+    * [Amazon S3 (Simple Storage Service)](#amazon-s3-simple-storage-service)
+    * [공유 파일 시스템](#공유-파일-시스템)
+    * [데이터 마이그레이션](#데이터-마이그레이션)
+1. [데이터베이스 서비스](#데이터베이스-서비스)
+    * [관계형 DB](#관계형-db)
+    * [비관계형 DB](#비관계형-db)
+    * [데이터베이스 캐싱](#데이터베이스-캐싱)
+1. [모니터링 및 스케일링](#모니터링-및-스케일링)
+    * [모니터링](#모니터링)
+    * [Load Balancing](#load-balancing)
+    * [Auto Scaling](#auto-scaling)
+1. [자동화](#자동화)
+      * [배포 자동화](#배포-자동화)
+1. [컨테이너](#컨테이너)
+1. [서버리스](#서버리스)
+    * [API Gateway](#api-gateway)
+    * [Amazon SQS (Simple Queue Service)](#amazon-sqs-simple-queue-service)
+    * [Amazon SNS (Simple Notification Service)](#amazon-sns-simple-notification-service)
+    * [Kinesis](#kinesis)
+    * [Step Functions](#step-functions)
+1. [엣지 서비스](#엣지-서비스)
+    * [CloudFront](#cloudfront)
+    * [Global Accelerator](#global-accelerator)
+    * [DDoS 보호](#ddos-보호)
+    * [Outposts](#outposts)
+1. [백업 및 복구](#백업-및-복구)
+     * [AWS Backup](#aws-backup)
+
+
 # Architecting on AWS
 AWS 서비스를 파악하고 기능을 비교하며, 복원력있고 안전하며 가용성이 뛰어난 IT 솔루션을 AWS에서 설계한다.
    
@@ -101,7 +153,7 @@ AWS 글로벌 클라우드 인프라는 업계에서 가장 안전하고 광범�
 - Access Advisor: 서비스에 대한 권한 액세스가 일어난 최근 파악
 - AWS IAM Access Analyzer: 외부 entity와 공유되는 리소스 파악 용이
 
-## 보안 주체 (Principlal)
+## 보안 주체 (Principal)
 권한을 받는 주체
 1. IAM 사용자
 1. IAM Role
@@ -480,7 +532,7 @@ AWS의 DNS 서비스
 - 들쭉날쭉 워크로드 또는 일시적 필요
 - 약정없이 시간 단위로 컴퓨팅 용량을 구입
 
-## 스토리지
+## 인스턴스 스토리지
 
 ### Amazon EBS
 - 블록 단위로 데이터가 저장됨
@@ -794,15 +846,6 @@ MySQL 및 PostgreSQL 호환되는 관계형 DB
 ### DynamoDB Acclerator
 - DynamoDB를 위한 완전관리형 고가용성 캐시 
 - 초당 수백건의 읽기 요청으로 쉽게 확장
-
-## 데이터베이스 마이그레이션 도구
-온프레미스 데이터 센터 <> AWS 클라우드
-
-### AWS DMS(Database Migration Service)
-- 이종 DB 마이그레이션
-- DB 통합
-- 지속적 데이터 복제
-- AWS Schema Conversion Tool을 통해서 마이그레이션
 
 # 모니터링 및 스케일링
 
