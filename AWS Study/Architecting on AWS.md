@@ -899,7 +899,7 @@ CloudWatch Log, CloudTrail, VPC Flow Logs
 ### ELB (Elastic Load balancing)
 - 자동으로 트래픽을 여러 대상에 분산
 - 고가용성 제공
-- 보안 기능 통합 (SSL 오프로딩: 복호화를 해주고 인스턴스에 전달)
+- 보안 기능 통합 (SSL 오프로딩: 복호화를 해주고 인스턴스에 전달, TLS 리스너: 서버 인증)
 - 상태 확인: 상태가 죽어있으면 트래픽을 보내지 않음
 
 #### 유형
@@ -1146,8 +1146,7 @@ API 생성/관리/배포하는 완전관리형 서비스
 - DDos > Shield > AWS Firewall Manager (AWS WAF)
     - AWS WAF 와 연동: CloudFront, Route 53, API Gateway
 
-
-### AWS Shield Stnadard
+### AWS Shield Standard
 - 일반적인 DDos 공격을 막음.
 - 3, 4 계층 네트워크 방어 (SYN 플러드, UDP 리플렉션 공격 방어)
 - 무료. 기본 제공.
