@@ -328,3 +328,127 @@ Serializable|-|-|-
     - 수평적 확장이 가능하여 효율적인 트래픽 처리 가능
 1. 빠르게 서비스를 구축하는 과정에서 구조를 자주 업데이트하는 경우
     - 시장에 빠르게 프로토타입을 출시해야하는 경우
+
+## 인덱스
+- 추가적인 저장 공간을 활용하여 DB 테이블의 검색 속도를 향상시키기 위한 자료구조
+    1. 만약 DB 테이블의 모든 데이터를 검색해서 원하는 결과를 가져오려면 시간이 오래 걸림 
+    2. **특정 열의 값**과 **해당 레코드의 주소**를 가진 인덱스를 만들어 데이터 탐색을 빠르게 한다.
+
+#### 특징
+- 장점
+    1. 테이블 조회하는 속도 향상
+    1. 시스템 부하를 줄임
+- 단점
+    1. 추가 저장 공간 필요
+    1. 정렬된 상태를 유지하기 위해 추가 작업 필요
+    1. 잘못 활용할 경우, 역효과
+- 권장 케이스
+    1. 데이터 양이 많은 테이블
+    1. 업데이트보다 조회가 잦은 테이블
+    1. 조건문이나 정렬이 잦은 테이블
+
+### 인덱스 자료구조
+
+#### B-Tree
+1. 자식 노드 2개 이상의 균형 트리 (비균형일 때 균형을 맞출 필요가 있음)
+1. Root/Branch/Leaf Node로 나뉨
+1. 하향식 검색을 수행
+
+<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FBLi5L%2FbtrdInhxyVP%2Febff3uYkmyoEty5lULR8kK%2Fimg.png">
+
+삽입과 제거: https://rebro.kr/169
+
+#### B+ Tree
+1. B-Tree의 확장
+1. 리프 노드만 인덱스-값을 가짐. Linked List로 연결됨
+    - 리프 노드에서 선형 탐색
+1. 한 노드에 많은 key를 담을 수 있어 트리 높이가 낮아짐
+
+<img src="https://ko.wikipedia.org/wiki/B%2B_%ED%8A%B8%EB%A6%AC">
+
+#### 최적화
+1. 인덱스는 비용
+    - 인덱스는 두 번 탐색 (인덱스 리스트 > DB 테이블)
+    - 테이블 수정 시, 인덱스도 수정되어야함
+1. 항상 테스팅하라
+    - 서비스마다 최적의 인덱스는 다르다
+1. 복합 인덱스를 신경쓰자
+    - 여러 필드를 기반으로 조회 할 때 복합 인덱스 생성
+    - 순서가 있고, 생성 순서에 따라 인덱스 성능이 달라짐
+    - 같음(==) > 정렬 > 다중 값 > 카디널리티 (유니크한 값의 정도)
+
+#### PK vs Index
+- 목적: 데이터 중복을 막기 위함 / 검색을 속도 개선을 위함
+- 데이터: 데이터 내에 존재함 / 별도의 디스크 공간에 존재함
+- 검색: 모든 데이터를 불러와야함 / Index 데이터만 가져와서 원하는 값을 얻을 수 있음
+
+## 조인의 원리
+1. 중첩 루프 조인
+    - 중첩 for문 + 조건에 맞는 조인 
+    - 랜덤 접근에 의한 비용이 많은 증가 (대용량에서 부적절)
+
+```
+for each row in t1 matching reference key{
+    for each row in t2 matching reference key{
+        if row satisfies join conditions, send to client
+    }
+}
+```
+
+2. 정렬 병합 조인
+    - 조인할 필드 기준으로 정렬하고 정렬이 끝난 이후에 조인 작업
+    - 적절한 인덱스가 없고, 조인 조건으로 범위 비교 연산자(<,>)가 있을 때 사용
+
+3. 해시 조인
+    - 해시 테이블 사용
+    - 동등(==) 조건에서만 사용
+    - 테이블을 한번씩만 읽어 중첩 루프 조인보다 보통 성능이 좋음
+    - 과정
+        1. 빌드 단계  
+        테이블 하나를 메모리에 온전히 삽입 (비교적 작은 테이블)
+        1. 프로브 단계  
+        레코드 읽기를 통해 기준과 일치하는 레코드를 찾아 결괏값 반환
+    
+
+## DB 튜닝
+- 리팩토링을 통해 시간을 줄이고, SQL 튜닝을 통해 속도 보장
+
+1. 인덱스를 타지 않는 경우
+    - 대부분 좌변을 가공하는 경우
+    - 상수나 우변을 가공할 방법을 모색해야함
+
+    ```sql
+    select * from TB where TRIM(USER_NO)='0001' --인덱스를 타지 않음
+    select * from TB where USER_NO='0001'
+    ```
+
+2. IN vs EXISTS
+    - 두 연산 모두 해당하는 값이 있는지에 대해 확인하는 연산
+    - IN(모든 집합에서 충족한 집합을 찾아냄), EXISTS(명시된 기준을 충족하는 단일 행의 조건)
+    - EXISTS가 연산에서 더 유리
+
+    ```sql
+    SELECT * FROM TB A 
+    WHERE A.USER_ID IN (
+        SELECT X.USER_ID FROM TB_USER X
+    )
+
+    SELECT * FROM TB A 
+    WHERE EXISTS (
+        SELECT 1 FROM TB_USER X WHERE X.USER_ID=A.USER_ID
+    )
+    ```
+
+3. JOIN의 순서를 생각하지 않은 경우
+    - 작은 것부터 연산하는 것이 성능상 유리
+
+    ```SQL
+    SELECT
+        *
+    FROM 
+        TB_USER a
+            INNER JOIN TB_ORDER B   --USER 테이블과 ORDER 테이블은 1:N관계. 
+            ON A.USER_ID = B.USER_ID    -- INNER JOIN을 통해 테이블을 작게 만든다
+    WHERE
+        B.ORDER_DT = '20210101'     -- 그 후 조건문 사용
+    ```
