@@ -114,3 +114,73 @@ AVL 트리|O(logN)|O(logN)|O(logN)|O(logN)
     - height: 트리의 최대 레벨
 
 ### Binary Tree (이진 트리)
+- 자식 노드 수가 2개 이하인 트리
+- 종류
+    - 정 이진 트리: 자식 노드가 0 또는 2개인 이진 트리
+    - 완전 이진 트리: 왼쪽에서부터 채워져 있는 이진 트리
+    - 포화 이진 트리: 모든 레벨이 꽉 찬 이진 트리
+    - 균형 이진 트리: 왼쪽과 오른쪽 노드의 높이 차이가 1이하인 이진 트리
+
+### BST (Binary Search Tree)
+- 효율적인 탐색을 위한 데이터 저장 방법
+- 규칙
+    1. 노드에 저장된 키는 유일
+    1. 왼쪽 자식 노드의 키가 부모 키보다 작다
+    1. 오른쪽 자식 노드의 키가 부모 키보다 크다
+    1. 왼쪽, 오른쪽 서브 트리도 BST이다
+- 구현
+    - 탐색
+        1. 노드 값과 비교한다.
+        2. 노드 값보다 작으면 왼쪽으로 이동하고, 크다면 오른쪽으로 이동한다.
+    - 삽입
+        1. 노드 값과 비교한다.
+        2. 노드 값보다 작으면 왼쪽으로 이동하고, 크다면 오른쪽으로 이동한다.
+        3. 이동할려는 위치에 노드가 없다면 해당 위치에 노드를 생성하고, 리턴한다.
+    - 삭제 
+        1. 삭제할 노드를 탐색한다. 
+        2. 해당 노드가 리프 노드일 경우, 해당 노드를 제거한다. 
+        3. 자식이 한 쪽 노드만 있을 경우, 해당 노드를 제거하고 자식 노드를 올린다.
+        4. 자식이 두 쪽 노드에 있을 경우, 오른쪽 노드에서 가장 작은 수를 올린다. (오른쪽으로 한번가고, 왼쪽으로 계속 가면 나옴)
+- 장점
+    - $O(logn)$의 시간 복잡도
+- 단점
+    - 최악의 경우(편향 트리) O(n)의 시간 복잡도를 가짐
+    - 배열보다 많은 메모리를 사용했지만 탐색에 필요한 시간은 같게되는 비효율적 상황 발생
+
+### AVL(Adelson-Velsky and Landis) Tree
+- 회전(Rotate)과정을 통해 스스로 균형을 잡는 BST
+- 탐색/삽입/삭제 모두 $O(logn)$의 시간복잡도를 가짐
+- Balance Factor(BF) = height(left sub tree) - height(right sub tree)
+    - BF는 -1~1의 값을 가짐
+
+#### Rotate
+- 삽입, 삭제 시 노드의 배열에 따라 (LL, RR, LR, RL) 불균형이 발생함
+- 각 상황에 따라 rotation 방향에 따라 균형을 맞춤
+
+1. LL(Left Left) Case
+    - Right Rotate를 통해 균형을 맞춘다.
+    - y 노드가 새로운 루트 노드가 된다.
+    - y 노드의 오른쪽 자식 노드는 z 노드의 왼쪽 자식 노드가 된다.  
+    (y 노드의 오른쪽 자식 노드는 z 노드보다 작은 수들이다)
+
+    <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FxLIeV%2Fbtq2Xb7eZdF%2F0tfPz6aL4PEFaIJC6CvTs1%2Fimg.png">
+
+2. RR(Right Right) Case
+    - Left Rotate를 통해 균형을 맞춘다.
+    - y 노드가 새로운 루트 노드가 된다.
+    - y 노드의 왼쪽 자식 노드는 z 노드의 오른쪽 자식 노드가 된다.  
+    (y 노드의 왼쪽 자식 노드는 z 노드보다 큰 수들이다)
+
+    <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FMgydF%2Fbtq2ZpcT9dF%2FWNzhK8Ka9KmiuX6iqj5Ws0%2Fimg.png">
+
+3. LR(Left Right) Case
+    - Left Rotate > Right Rotate를 통해 균형을 맞춘다.
+
+    <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FtMu3I%2Fbtq21Mk69Ei%2FTToajHJiFvy3FmNYlbagj0%2Fimg.png">
+
+4. RL(Right Left) Case
+    - Right Rotate > Left Rotate를 통해 균형을 맞춘다.
+
+    <img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FbrTQV1%2Fbtq2TcMbXA3%2FmhrY8bPspDrRT90kkGDIR1%2Fimg.png">
+
+### Red Black Tree
