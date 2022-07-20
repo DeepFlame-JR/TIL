@@ -1,3 +1,30 @@
+# 목차
+  * [기초](#기초)
+    + [처리량과 지연 시간](#처리량과-지연-시간)
+    + [네트워크 토폴로지(Network topology)](#네트워크-토폴로지network-topology)
+  * [TCP/IP 4계층 모델](#tcpip-4계층-모델)
+    + [Application 계층](#application-계층)
+    + [Transport 계층](#transport-계층)
+    + [Internet 계층](#internet-계층)
+    + [Link 계층](#link-계층)
+    + [계층 간에 데이터 송수신](#계층-간에-데이터-송수신)
+  * [IP 주소](#ip-주소)
+    + [ARP (Address Resolution Protocol)](#arp-address-resolution-protocol)
+    + [홉바이홉 통신](#홉바이홉-통신)
+      - [라우팅 테이블](#라우팅-테이블)
+      - [게이트웨이](#게이트웨이)
+    + [IP 주소 체계](#ip-주소-체계)
+      - [NAT (Network Address Translation)](#nat-network-address-translation)
+  * [HTTP](#http)
+    + [HTTP/1.0](#http10)
+    + [HTTP/1.1](#http11)
+    + [HTTP/2](#http2)
+    + [HTTPS](#https)
+
+<br>
+<br>
+<br>
+
 # 네트워크
 
 ## 기초
@@ -186,7 +213,7 @@ Internet 계층에서 IP 주소를 사용하여 데이터를 목적지로 전송
     따라서 12.0.0.1~12.255.255.254를 호스트 주소로 사용할 수 있다
 - 사용하는 주소보다 버리는 주소가 많은 단점이 있다
 
-#### NAT (Natwork Address Translation)
+#### NAT (Network Address Translation)
 - 패킷이 라우팅 장치를 통해 전송되는 동안 IP주소를 변경하는 방법
 - 공인 IP와 사설 IP를 나누어서 많은 주소를 처리
     - 공인 IP의 개수는 한계가 있기 때문

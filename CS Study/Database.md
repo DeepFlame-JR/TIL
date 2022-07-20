@@ -14,6 +14,10 @@
     + [NoSQL DB](#nosql-db)
     + [관계형 DB vs NoSQL DB](#관계형-db-vs-nosql-db)
 
+<br>
+<br>
+<br>
+
 # 데이터베이스
 - 일정한 규칙 혹인 규약을 통해 구조화되어 저장되는 데이터 모음
 - 실시간 접근과 동시 공유 가능
