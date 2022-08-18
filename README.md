@@ -15,9 +15,9 @@ _9 TILs and counting..._
 
 ### Categories
 
-- [AWS Study](#AWS Study)
-- [Big Data](#Big Data)
-- [CS Study](#CS Study)
+- [AWS Study](#AWS-Study)
+- [Big Data](#Big-Data)
+- [CS Study](#CS-Study)
 
 ### [AWS Study](#AWS Study)
 - [AWS Technical Essentials](AWS Study/AWS Technical Essentials.md)
