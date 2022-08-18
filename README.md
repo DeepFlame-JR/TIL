@@ -4,20 +4,25 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_9 TILs and counting..._
+_13 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
-- [AWS Technical Essentials](AWS Study/AWS Technical Essentials.md) - Thu Aug 18 22:27:31 2022 +0900
-- [목차](AWS Study/Architecting on AWS.md) - Thu Aug 18 22:27:31 2022 +0900
+- [1_Design_Pattern_and_Paradigm](CS/1. Design Pattern and Paradigm.md) - Thu Aug 18 22:54:36 2022 +0900
+- [3_OS](CS/3. OS.md) - Thu Aug 18 22:54:36 2022 +0900
 
 ### Categories
 
-- [AWS Study](#AWS-Study)
-- [Big Data](#Big-Data)
-- [CS Study](#CS-Study)
+- [AWS](#AWS)
+- [AWS Study](#AWS Study)
+- [Big Data](#Big Data)
+- [CS](#CS)
+- [CS Study](#CS Study)
+
+### [AWS](#AWS)
+- [AWS_Technical_Essentials](AWS/AWS Technical Essentials.md)
 
 ### [AWS Study](#AWS Study)
 - [AWS Technical Essentials](AWS Study/AWS Technical Essentials.md)
@@ -26,6 +31,11 @@ _9 TILs and counting..._
 
 ### [Big Data](#Big Data)
 - [<p align="center">](Big Data/1. 빅데이터 기초 지식.md)
+
+### [CS](#CS)
+- [1_Design_Pattern_and_Paradigm](CS/1. Design Pattern and Paradigm.md)
+- [2_Network](CS/2. Network.md)
+- [3_OS](CS/3. OS.md)
 
 ### [CS Study](#CS Study)
 - [목차](CS Study/Data Structure.md)
