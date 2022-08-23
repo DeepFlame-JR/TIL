@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_9 TILs and counting..._
+_10 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [2_Technical_BigData](BigData/2_Technical_BigData.md) - Mon Aug 22 23:22:40 2022 +0900
 - [AWS_Technical_Essentials](AWS/AWS_Technical_Essentials.md) - Thu Aug 18 22:58:47 2022 +0900
-- [Architecting_on_AWS](AWS/Architecting_on_AWS.md) - Thu Aug 18 22:58:47 2022 +0900
 
 ### Categories
 
@@ -26,6 +26,7 @@ _9 TILs and counting..._
 
 ### [BigData](#BigData)
 - [1_Basic_of_BigData](BigData/1_Basic_of_BigData.md)
+- [2_Technical_BigData](BigData/2_Technical_BigData.md)
 
 ### [CS](#CS)
 - [1_Design_Pattern_and_Paradigm](CS/1_Design_Pattern_and_Paradigm.md)
