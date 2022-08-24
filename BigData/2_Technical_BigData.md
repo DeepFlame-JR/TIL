@@ -251,8 +251,154 @@ Run-3. 어플리케이션이 종료되면 어플리케이션 마스터는 리소
 ```
 
 #### ZooKeeper
-- Hadoop의 분산처리 환경에서 조율을 관리하는 어플리케이션
+- Hadoop의 분산처리 환경에서 `조율을 관리하는 코디네이션 서비스`
 - 복수의 컴퓨터가 네트워크를 통해 통신하며 하나의 목적을 위해 서로간에 상호작용한다. 이때 마치 하나인 것처럼 동작하는 시스템처럼 합의를 이끌어내는 서비스
 - 고가용성 확보, 태스크 조율, 상태 추적, 일반적인 설정 파라미터 값 지정 수행
 
-<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FbFc4Bp%2FbtrquPyvkfJ%2FytWkjYvQO3OySoNOgCOotk%2Fimg.png" >
+<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FkPeUK%2FbtrKvEx2xrY%2FPfX6CkmkvXsuIuRhETmKNk%2Fimg.png" >
+
+아키
+1. 클라이언트가 주키퍼 서버에 데이터를 업데이트한다. (Client B > Server D)
+2. Leader 서버에서 이를 알린다.
+3. Leader 서버에서는 Broadcast 형식으로 Follower 서버들에게 알린다.
+4. 모든 서버에서 데이터가 일관된 상태로 유지된다.
+
+<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2F1jbGE%2FbtrKsO2SjhG%2FLknJjwgxd0kAVJRWwCRLZk%2Fimg.jpg">
+
+`znode`
+- 데이터를 저장하기 위해 사용하는 가장 작은 단위의 데이터 저장 객체
+- 모든 데이터가 메모리에 저장되며, 최대 1MB로 제한적 → `설정 값이나 리소스 상태` 등을 저장하는 매우 유용
+- Zookeeper는 여러 서버에 분산되어 있는 znode를 관리한다.
+- 종류
+    - Persistent Node: 명시적으로 삭제되기 전까지 존재.
+    - Ephemeral Node: 세션이 유지되는 동안 존재. 자식 노드를 가질 수 없다
+
+
+#### MapReduce
+- 분산 시스템에서 데이터 처리를 하는 시스템
+- 비구조화 데이터를 가공하는 데 적합
+- `Map Task`: 파일에 있는 각 레코드를 Key-Value형태로 변환한 결과를 반환한다.
+- `Reduce Task`: 하나의 키에 대한 여러 값의 집계 또는 결합해서 입력값의 개수보다 더 작은 개수의 결과값을 산출한다.
+
+<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FbhfcnK%2FbtrqsFwXfmJ%2F46fgAZoKuSSWyViDgDMVMK%2Fimg.png" width="500">
+
+```
+예) 단어 개수 세기
+Map. (단어, 1)의 Key-Value 구조의 리스트를 반환한다.
+Shuffling. 단어 중심으로 데이터를 데이터를 모은다.
+Reduce. (단어, count)를 수행하여 각 블록에서 특정 단어가 몇 번 나왔는지 계산한다.
+```
+
+#### Hive
+- SQL 등의 쿼리 언어에 의한 데이터 집계 가능 (SQL-on-Hadoop)
+    - 데이터가 저장된 HDFS에 접근하기 어려움
+- 쿼리를 자동으로 MapReduce 프로그램으로 변환하는 소프트웨어로 개발됨 (Spark도 지원되긴 함)  
+    → MapReduce가 대량의 배치 처리를 위한 시스템이다.  
+    → 초기 지연이 너무 크기 때문에 작은 쿼리 실행에는 적합하지 않다.  
+    → `배치 처리`에 적합  
+
+👉 `메타 스토어`
+- HDFS에 적재된 데이터의 메타정보(파일 위치, 이름 등)을 Table Schema 정보와 함께 메타스토어에 등록  
+→ Hive 쿼리를 수행할 때 메타스토어의 정보를 참조하여 마치 RDBMS에서 데이터를 조회하는 것 같은 기능 제공
+
+👉 `아키텍처`  
+
+<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FbMBATj%2FbtrKwbh45zy%2FD0q0JwtPs5MKOUFCPbKG41%2Fimg.png" width="500">
+
+하이브는 사용자 쿼리를 파싱하고, `최적화`해서 하나 이상의 연쇄 배치 연산으로 `컴파일`하며 이를 클러스터에서 실행한다. 
+1. HiveQL 문을 Driver가 받고, 메타스토어의 정보를 활용하여 적합한 형태로 컴파일
+2. 컴파일된 SQL을 실행 엔진으로 실행
+3. 리소스 매니저가 클러스터 자원을 적절히 활용하여 실행
+4. 원천 데이터는 HDFS를 활용
+5. 결과를 사용자에게 변환 
+
+👉 `데이터 저장 방법`  
+- **SerDe**: Hive가 데이터를 해석하는 방법을 제공
+    - Avro, ORC, RegEx, Thrift, Parquet, CSV, JSONSerDe
+    - Parquet: 열 기반 데이터 구조 (인코딩 효율이 높음, 쿼리 성능이 높음)
+- 쿼리 성능 향상을 위한 데이터 형식
+    - **Partition**
+        - Column 정보를 이용하여 폴더 단위로 데이터가 생성 (큰 데이터를 작은 데이터로 쪼갬)
+        - 기본적으로 테이블의 모든 row를 읽음 (파티션이 있다면 폴더의 데이터만 읽어 성능 향상)
+        - Partition 범주가 너무 많지 않도록 주의
+    - **Bucket**
+        - 지정된 칼럼의 값을 해쉬 처리하고, 데이터를 지정한 수의 파일로 나누어 저장
+        - 범주가 40이고, 버켓이 20이면 한 버켓이 2개의 범주씩 쌓인다
+        - 조인 키로 버킷을 생성해두면 생성된 버킷 중 필요한 버킷만 조회하면 됨 → 성능 향상
+    - **Skew**
+        - 주로 많이 들어오는 데이터가 몰릴 때 사용 (A, B 외 나머지 총 3개의 디렉토리나 파일로 구별)
+        - 네임노드의 관리 포인트가 줄어든다.
+
+
+#### Impala, Presto
+- 대화형의 쿼리 실행 전문
+- 초기 지연이 적음 → Hive를 통해서 구조화 데이터를 만들고, 뒤에 활용됨
+
+👉 **Impala**
+1. SQL, HiveQL 모두 사용 가능
+2. HDFS에 저장 + Hive 메타스토어를 사용
+3. C++을 통해 구현하여 속도 개선 + 실시간 데이터 처리 + `데이터 소비자` 
+4. 새로 프로젝트를 시작한다면 좋은 옵션
+
+👉 **Presto**
+1. 페타바이트 급의 데이터처리 SQL 사용
+2. 대기 시간에 최적화, 쿼리 처리량 메모리 양에 제한 + `데이터 소비자` 
+3. 기존의 진행 중인 데이터 시스템을 수정할 필요없이 기존의 생태계와 원활하게 통합되도록 설계
+4. 컴퓨팅과 스토리지가 별도로 수행되어서 클라우드 환경에 적합하다.
+
+
+### Spark
+- MapRduce의 단점을 극복하기 위한 데이터 처리 시스템
+    - Map Reduce의 단점
+        - 맵리듀스로 복잡한 파이프라인을 조합하는 것은 많은 분석가들에게 부담
+        - 많은 양의 디스크 기반 I/O를 수행한다. 따라서 다중 단계 파이프라인은 I/O 비용이 매우 많이 든다.
+- 대량의 `메모리를 활용`하여 고속화를 실행
+    - 가능한 많은 데이터를 메모리상에 올린 상태로 두어 디스크에는 아무것도 기록하지 않는다.
+    - 컴퓨터가 비정상 종료하는 경우에도, 그때 처리를 다시 시도해서 중간 데이터를 다시 생성하면 된다.
+- 특징
+    - JDK 필요. Spark SQL 이용
+    - 다양한 스크립트 언어 지원(Java, Scala, Python, R 등)
+    - MapReduce 개선 사항으로 설계됨 → Hadoop과 호환성이 좋음
+
+👉 **RDD vs DataFrame vs Dataset**
+- `RDD (Resilient Distributed Datasets)`
+    - 스키마가 없는 분산된 데이터 모음 (스키마 수동 정의)
+    - 메모리 내부에서 데이터 손실하더라도 재연산으로 복구할 수 있는 데이터 집합 → 내결함성 방식
+    - Lineage(DAG) + 읽기전용 → 데이터 처리의 관계성을 명확히 할 수 있음 → 특정 RDD에서 메모리가 유실되더라도 복기할 수 있음
+- `DataFrame`
+    - 분산된 데이터를 Column으로 모은 데이터 구조
+    - 관계형 테이블과 같은 구조 → 대용량 데이터를 좀 더 쉽게 처리
+    - 스키마 자동 정의
+- `DataSet`
+    - DataFrame에서의 확장 (Dataset[Row] == DataFrame)
+    - Scala and Java에서만 활용가능
+    - 스키마 자동 정의
+
+👉 **Spark 연산 과정**  
+- Logical Plan
+    연산 단계에서 사용될 DataFrame이나 Column이 실제로 존재하는지에 대한 검사를 시행한다.
+- Physical Plan
+    1. 클러스터에서 Logical Plan을 어떻게 실행할지 정의한다. 
+    2. 그 방법은 다양한 방법을 시도해보고, Cost Model을 이용하여 비교한다. 
+    ⇒ `Best Physical Plan`을 선택
+
+<img src="https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FbOYdlK%2Fbtrq7ao3mSU%2FLbu13eBKp3vQuPfkamwjU0%2Fimg.jpg">
+
+👉 **Lazy Ealuation**  
+`Action이 시작되는 시점`에 Transformation끼리 연계를 파악해 실행 계획을 최적화 (physical plan)
+- Transformation: 새로운 RDD를 생성하는 동작 (map, filter, distinct)
+- Action: 기록된 모든 작업을 실제로 수행하는 연산 (first, show, collect, count)
+
+<img src="https://user-images.githubusercontent.com/40620421/186442906-7503b6ce-e867-43c2-9fa8-17fba7b7d9c7.png" width="500">
+
+```scala
+// 예시 1
+val df1 = (1 to 100000).toList.toDF("col1")
+df1.withColumn("col2",lit(2)).drop("col2").explain(true) // col2에 대한 처리는 생략된다.
+
+// 예시 2
+val arr = Array(1,2,3,4,5,6)
+arr.filter(_<=4).filter(_%2==0).first 
+// eager: [2,4]를 구한 후 2를 구함
+// lazy: 첫번째 값만 구하면 되기때문에 2만 구함
+```
