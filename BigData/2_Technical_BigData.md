@@ -294,8 +294,9 @@ Reduce. (단어, count)를 수행하여 각 블록에서 특정 단어가 몇 �
     - 데이터가 저장된 HDFS에 접근하기 어려움
 - 쿼리를 자동으로 MapReduce 프로그램으로 변환하는 소프트웨어로 개발됨 (Spark도 지원되긴 함)  
     → MapReduce가 대량의 배치 처리를 위한 시스템이다.  
-    → 초기 지연이 너무 크기 때문에 작은 쿼리 실행에는 적합하지 않다.  
+    → `초기 지연이 너무 크기` 때문에 작은 쿼리 실행에는 적합하지 않다.  
     → `배치 처리`에 적합  
+- Hive는 DB가 아닌 데이터 처리를 위한 배치 처리 구조이다. (쿼리 성능 고민 필요)
 
 👉 `메타 스토어`
 - HDFS에 적재된 데이터의 메타정보(파일 위치, 이름 등)을 Table Schema 정보와 함께 메타스토어에 등록  
@@ -402,3 +403,76 @@ arr.filter(_<=4).filter(_%2==0).first
 // eager: [2,4]를 구한 후 2를 구함
 // lazy: 첫번째 값만 구하면 되기때문에 2만 구함
 ```
+
+## 3-2. 쿼리 엔진
+SQL-on-Hadoop에 의한 데이터 처리의 구체적인 예  
+
+### 데이터 마트 구축의 파이프라인
+- 목표는 데이터 마트에서 `빠른 조회`
+- 파이프라인  
+    지연 시간이 긴 Hive로 데이터를 조회하기 빠른 형태로 구조화하고, 지연시간이 적은 Presto로 데이터를 조회하는 구조
+    - `Hive`: 분산 스토리지 내 비구조화 데이터 → 구조화 데이터 → 열 지향 스토리지 형식으로 저장
+    - `Presto`: 완성한 구조화 데이터를 결합, 집계하고 비정규화 테이블로 데이터 마트에 내보낸다
+
+<img src="https://user-images.githubusercontent.com/40620421/186680026-d52e7605-9ea2-47a9-87e0-d35e199999ca.png" width="500">
+
+<br/>
+<br/>
+
+#### Hive에 의한 구조화 데이터 만들기
+
+```sql
+-- 예시 1) 바로 조회
+SELECT status, count(*) cnt FROM access_log_csv
+-- 8.664 seconds (바로 집계는 비효율적)
+
+
+-- 예시 2) 구조화 진행 후 조회
+CREATE TABLE access_log_orc STORED AS ORC AS
+SELECT cast(TIME as timestamp) time, request, status FROM access_log_csv
+-- 15.993 seconds (시간이 걸리는 프로세스임으로 Hive와 같은 배치형 쿼리 엔진이 적합)
+
+SELECT status, count(*) cnt FROM access_log_csv
+-- 1.567 seconds (구조화 데이터를 집계하는 것이 훨씬 효율적)
+```
+
+Hive로 비정규화 테이블 작성  
+- 데이터 마트를 구축하기 위해 비정규화 테이블을 작성한다
+- 시간이 오래 걸리는 작업인 경우 지연시간이 총 작업시간에 큰 영향을 주지 않고, 리소스 이용 효율을 높일 수 있어 Hive를 활용하는 것이 원칙적이다
+
+Hive 쿼리 개선  
+1. 서브 쿼리 안에서 레코드 수 줄이기
+
+    ```sql 
+    -- 비효율적인 쿼리 (전체 데이터를 조회한 후 Filter)
+    SELECT ... 
+    FROM access_log a 
+    JOIN users b ON b.id=a.user_id
+    WHERE b.created_at = '2017-01-01'
+
+    -- 보다 효율적인 쿼리 (초기에 팩트 테이블을 작게한다)
+    SELECT ... 
+    FROM (
+        SELECT * access_log
+        WHERE time >= TIMESTAMP '2017-01-01 00:00:00'
+    ) a
+    JOIN users b ON b.id=a.user_id
+    WHERE b.created_at = '2017-01-01'
+    ```
+
+1. 데이터 편향 피하기
+
+    ```sql
+    -- 비효율적인 쿼리 (distinct count는 분산되지 않아 처리가 오래 걸림)
+    SELECT date, count(distinct user_id) users
+    FROM access_log GROUP BY date
+
+    -- 보다 효율적인 쿼리 (최초에 중복을 없앤다)
+    SELECT date, count(*) users
+    FROM(
+        SELECT distinct date, user_id FROM access_log
+    ) a
+    GROUP BY date
+    ```
+
+#### 대화형 쿼리 엔진 Presto의 구조
