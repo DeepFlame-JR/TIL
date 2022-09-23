@@ -4,18 +4,19 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_11 TILs and counting..._
+_12 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [1_데이터플랫폼_최신기술](AWSKRUG/1_데이터플랫폼_최신기술.md) - Fri Sep 23 16:47:06 2022 +0900
 - [Docker](Docker_K8S/Docker.md) - Tue Sep 20 00:11:23 2022 +0900
-- [2_Technical_BigData](BigData/2_Technical_BigData.md) - Mon Aug 22 23:22:40 2022 +0900
 
 ### Categories
 
 - [AWS](#AWS)
+- [AWSKRUG](#AWSKRUG)
 - [BigData](#BigData)
 - [CS](#CS)
 - [Docker_K8S](#Docker_K8S)
@@ -24,6 +25,9 @@ _11 TILs and counting..._
 - [AWS_Technical_Essentials](AWS/AWS_Technical_Essentials.md)
 - [Architecting_on_AWS](AWS/Architecting_on_AWS.md)
 - [Developing_of_AWS](AWS/Developing_of_AWS.md)
+
+### [AWSKRUG](#AWSKRUG)
+- [1_데이터플랫폼_최신기술](AWSKRUG/1_데이터플랫폼_최신기술.md)
 
 ### [BigData](#BigData)
 - [1_Basic_of_BigData](BigData/1_Basic_of_BigData.md)
