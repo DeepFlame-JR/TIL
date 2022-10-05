@@ -225,3 +225,173 @@ docker rm $(docker ps -a -q)    # -a -q: 모든 컨테이너의 ID를 가져옴
     docker container inspect test_container
     ```
 
+### 도커 네트워크
+- 도커는 컨테이너에 내부 IP를 순차적으로 할당
+    - 내부 IP가 외부와 연결되기 위해서는 호스트에 `veth.. (virtual eth)` 인터페이스를 생성함으로 이루어짐
+- 도커 네트워크의 구조
+    - 컨테이너의 eth0 인터페이스는 호스트의 veth 인터페이스와 연결됐으며, veth 인터페이스는 docker0 브리지와 바인딩 돼 외부와 통신할 수 있다
+        - `eth0`: 공인 IP 또는 내부 IP가 할당되어 실제로 외부와 통신할 수 있는 호스트 네트워크 인터페이스
+        - `lo`: 로컬 네트워크 인터페이스
+        - `docker0`: 인터페이스와 바인딩 돼 호스트의 eht0 인터페이스와 이어줌
+        - `veth`: 가상 네트워크 인터페이스 (실행 중인 컨테이너 만큼 생성)
+
+    <img src="https://user-images.githubusercontent.com/40620421/193817872-331bef5d-2c16-4ac0-839e-532826a1d7cb.png" width="300">
+
+
+#### 도커 네트워크 종류
+- docker0 브리지 외에 여러 네트워크 드라이버 사용 가능
+    - 브리지, 호스트, 논, 컨테이너, 오버레이
+    - weave, flannel, openvswitch (3-rd party)
+- docker network 확인
+    ```powershell
+    # 기본적으로 브리지, 호스트, 논 네트워크가 존재
+    # 컨테이너에서 네트워크를 설정하지 않는다면 자동으로 docker0 브리지
+    docker network ls
+    > NETWORK ID     NAME      DRIVER    SCOPE
+    > 7a8049f045f7   bridge    bridge    local 
+    > 8fcf78caa1b0   host      host      local
+    > ab5d61abaddb   none      null      local
+
+    네트워크 상세 정보    
+    # docker network inspect bridge
+    ```
+
+1. 브리지 네트워크
+    - 사용자 정의 브리지를 생성해 각 컨테이너를 연결하는 네트워크 구조
+    - --net 옵션으로 컨테이너와 연결
+    ```powershell
+    # 브리지 네트워크 생성
+    docker network create --driver bridge \
+    --subnet=172.72.0.0./16 \   # 컨테이너가 사용할 네트워크 정보
+    --ip-range=172.72.0.0/24 \  # 호스트에서 사용할 컨테이너 IP 범위
+    --gateway=172.72.0.1 \
+    mybridge
+
+    # 컨테이너 생성과 네트워크 연결
+    docker run -i -t --name mynetwork_container \
+    --net mybridge \
+    ubuntu
+
+    # 연결과 연결 해제
+    docker network disconnect mybridge mynetwork_container
+    docker network connect mybridge mynetwork_container
+    ```
+
+1. 호스트 네트워크
+    - 호스트의 네트워크 환경을 그대로 쓸 수 있음
+    - 컨테이너 내부의 애플리케이션을 별도의 포트 포워딩 없이 바로 포워딩 가능
+    ```powershell
+    docker run -i -t --name network_host \
+    --net host \
+    ubuntu
+    ```
+
+1. 논 네트워크
+    - 네트워크를 쓰지 않음 (lo 네트워크 인터페이스만 존재)
+    - 외부와 연결이 단점 
+    ```powershell
+    docker run -i -t --name network_none \
+    --net none \ 
+    ubuntu
+    ```
+
+1. 컨테이너 네트워크
+    - 다른 컨테이너의 네트워크 네임스페이스 환경을 공유 (내부IP, MAC 주소 등)
+    ```powershell
+    docker run -i -t -d --name network_container_1 ubuntu
+
+    docker run -i -t -d --name network_container_2 \
+    --net container:network_container_1 \
+    ubuntu
+    ```
+
+#### 브리지 네트워크와 --net-alias
+- --net-alias 옵션을 통해 특정 호스트 이름으로 여러 개에 접근할 수 있음
+- 도커의 DNS를 활용 (--link, --net-alias 등에 활용)
+```powershell
+docker run -i -t -d --name network_alias_container1 \
+--net mybridge
+--net-alias alicek106 ubuntu
+
+docker run -i -t -d --name network_alias_container2 \
+--net mybridge
+--net-alias alicek106 ubuntu
+
+# mybridge에 속한 컨테이너에서 alicek106이라는 호스트 이름으로 접근하면 DNS서버는 컨테이너의 IP 리스트를 반환하고, 이 중 첫번째 IP를 사용한다.
+```
+
+#### MacVLAN 네트워크
+- 호스트의 네트워크 인터페이스 카드를 가상화해 물리 네트워크 환경을 컨테이너에게 동일하게 제공
+- 가상의 MAC 주소를 가지며, 다른 장치와 통신 가능
+```powershell
+docker network create -d macvlan my_macvlan
+
+docker run -it --name c1 --hostname c1 \
+--network my_macvlan ubuntu
+```
+
+### 컨테이너 로깅
+1. json-file 로그
+    - 컨테이너 내부에서 일어나는 일을 알기 위함
+    - 도커는 컨테이너의 표준 출력과 에러 로그를 별도 메타 데이터 파일로 저장
+    ```powershell
+    docker logs myUbuntu
+    docker logs --tail 2 myUbuntu   # 끝에서 두개 log만 가져옴
+    docker logs -f -t myUbuntu      # -f: 스트림, -t: 타임스탬프
+    ```
+
+1. syslog 로그
+    - syslog: 유닉스 계열 OS에서 로그를 수집하는 표준
+    - JSON 뿐 아니라 syslog로 보내 저장하도록 설정 가능
+    ```powershell
+    docker run -d --name syslog_container \
+    --log-driver=syslog \
+    ubuntu
+    ```
+    - rsyslog를 써서 로그 정보를 원격 서버로 보낼 수 있음
+    ```powershell
+    # 서버
+    docker run -i -t \
+    -h rsyslog \
+    --name rsylog_server \
+    -p 514:514 -p 514:514/udp \
+    ubuntu
+
+    # 클라이언트
+    docker run -i -t \
+    --log-driver=syslog \
+    --log-opt syslog-address=tcp://192.168.0.100:514 \
+    --log-opt tag="mytag" \     # 로그와 함께 저장될 태그
+    ubuntu
+    ```
+
+1. fluentd 로깅
+    - 각종 로그를 수집하고 저장할 수 있는 기능을 제공하는 오픈 소스
+    - AWS S3, HDFS, MongoDB 등 다양한 저장소에 저장할 수 있음
+    ```powershell
+    # Mongo 서버
+    docker run --name mongoDB -d -p 27017:27017 mongo
+
+    # fluentd 서버
+    docker run -d --name fluentd -p 24224:24224 \
+    -v $(pwd)\fluent.conf:/fluentd/etc/fluent.conf \
+    -e FLUENTD_CONF=fluent.conf \
+    alicek106/fluentd:mongo
+
+    # Docker 서버
+    docker run -d -p 80:80 \
+    --log-driver=fluentd \
+    --log-opt fluentd-address=192.168.0.101:24224 \
+    --log-opt tag=docker.nginx.webserver \
+    nginx
+    ```
+    <img src="https://user-images.githubusercontent.com/40620421/193832200-6466138a-1c92-45e0-9152-7e3959f74cfb.png">
+
+1. 아마존 클라우드워치 로그
+    - AWS에서는 로그 및 이벤트 등을 수집하고 저장해 시각적으로 보여주는 `클라우드 워치`를 제공
+    - 단계
+        1. 클라우드워치에 해당하는 IAM 권한 생성
+        1. 로그 그룹 생성
+        1. 로그 그룹에 로그 스트림 생성
+        1. 클라우드워치의 IAM 권한을 사용할 수 있는 EC2 인스턴스 생성과 로그 전송
+    
