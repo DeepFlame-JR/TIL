@@ -394,4 +394,61 @@ docker run -it --name c1 --hostname c1 \
         1. 로그 그룹 생성
         1. 로그 그룹에 로그 스트림 생성
         1. 클라우드워치의 IAM 권한을 사용할 수 있는 EC2 인스턴스 생성과 로그 전송
-    
+
+### 컨테이너 자원 할당 제한
+제품 단계의 컨테이너의 경우 자원 할당을 제한해 다른 컨테이너의 동작을 방해하지 않도록 하는 것이 중요
+
+1. 메모리 제한
+    - 단위는 m(megabyte), g(gigabyte)
+    - 최소 메모리는 6MB
+    - 할당된 메모리가 초과되면 자동 종료
+    - swap 메모리(메모리가 가득 찼을 때 디스크 공간을 이용) 설정 가능
+    ```powershell
+    docker run -d \
+    --memory=200m \
+    --memory-swap=500m
+    --name memory_1g nginx
+    ```
+
+1. CPU 제한
+    - cpu-shares: CPU를 어느 비중만큼 나눠 쓸 것인지 설정
+    ```powershell
+    docker run -i -t --name cpu_share \
+    --cpu-shares 1024 \
+    ubuntu
+    ```
+    - cpuset-cpus: CPU가 여러 개 있을 때 컨테이너가 특정 CPU만 사용하도록 설정
+    ```powershell
+    docker run -i -t --name cpuset_2 \
+    --cpuset-cpus=2 \   # 3번째 CPU만 사용
+    stress
+    stress --cpu 1      # 컨테이너 명령어: 1개 프로세스로 CPU에 부하를 줌
+    ```
+    - cpu-period, cpu-quota: CFS(Completely Fair Scheduler) 주기를 설정
+    ```powershell
+    docker run -d --name quota_1_4 \
+    --cpu-period=100000 \ # 기본값이 100000으로 100ms
+    --cpu-quota=25000 \   # 설정된 시간 중 CPU 스케줄링에 얼마나 할당할지
+    stress                # 일반적인 컨테이너보다 성능 1/4 감소
+    stress --cpu 1 
+
+    docker run -d --name quota_1_4 \
+    --cpus=0.25 \         # 위와 같은 설정
+    stress
+    stress --cpu 1 
+    ```
+
+1. Block I/O 제한
+    - 하나의 컨테이너가 블록 입출력을 과도하게 사용하지 않게 설정
+    ```powershell
+    docker run -it \
+    --device-write-bps /dev/xvda:1mb \
+    --device-read-bps /dev/xvda:1mb \
+    ubuntu
+
+    docker run -it \
+    --device-write-iops /dev/xvda:5 \   # 상대적인 값 설정
+    --device-read-iops /dev/xvda:10 \
+    ubuntu
+    ```
+
