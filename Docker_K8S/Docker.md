@@ -452,3 +452,148 @@ docker run -it --name c1 --hostname c1 \
     ubuntu
     ```
 
+## 도커 이미지
+- 모든 컨테이너는 이미지를 기반으로 생성됨
+- 도커 허브는 도커가 공식적으로 제공하고 있는 이미지 저장소
+
+### 도커 이미지 생성
+- docker commit을 통해 생성
+    ```shell
+    docker commit \     
+    -a "junryeol.lee" \ # 이미지 작성자
+    -m "first image" \  # 커밋 메시지
+    commit_test \       # 이미지화할 컨테이너
+    commit_test:first   # (이미지 명):(태그)
+    ```
+
+#### 이미지 구조 이해
+- 이미지를 커밋할 때 컨테이너의 변경된 사항만 새로운 `레이어`로 저장
+- 그 레이어를 포함하여 이미지를 저장
+
+<img src="https://user-images.githubusercontent.com/40620421/194328006-ae6c09a7-431b-40e8-a027-cacc9b0cdad4.png" width="500">
+
+#### 이미지 배포
+1. 바이너리 파일 
+    - 이미지를 단일 바이너리 파일로 저장할 수 있음
+    - 레이어 형태를 이용하지 않아, 이미지 용량을 각각 차지함으로 좋은 방법은 아님
+    ```powershell
+    docker save -o ubuntu.tar ubuntu    # 저장
+    docker load -i ubuntu.tar           # 로드
+    ```
+
+1. 도커 허브 활용
+    - 이미지를 올리고, 내려받기만 하면 됨
+    ```powershell
+    docker push deepflame21/my-image-name:0.0 # (image name):(tag)
+    docker pull deepflame21/my-image-name:0.0
+    ```
+
+## Dockerfile
+- 애플리케이션이 동작하는 환경을 구성하기 위한 일련의 작업을 기록한 파일
+    - 해당 과정을 손쉽게 기록하고 수행할 수 있는 빌드(build) 명령어를 제공
+- 깃과 같은 개발 도구를 통해 애플리케이션의 빌드 및 배포를 자동화
+- 이미지를 배포하는 대신에 이미지를 생성하는 방법을 기록한 Dockerfile을 배포할 수도 있음
+
+### Dockerfile 작성
+- FROM: 생성할 이미지의 베이스가 될 이미지
+- MAINTAINER: 이미지를 생성한 개발자 정보
+- LABEL: 이미지에 키:값 정보의 메타데이터를 추가함
+- RUN: 이미지를 만들기 위해 컨테이너 내부에서 명령어를 실행
+- ADD: 파일을 이미지에 추가 (Dockerfile 디렉토리를 기준으로 함)
+- WORKDIR: 명령어를 실행할 디렉토리를 설정 (cd 명령어와 같은 기능)
+- EXPOSE: Dockerfile 빌드로 생성된 이미지에서 노출할 포트
+- CMD: 컨테이너가 시작될 때마다 실행할 명령어를 설정. Dockerfile에서 한 번만 사용 가능
+
+```powershell
+FROM ubuntu
+MAINTAINER deepflame21
+LABEL "purpose"="practice"
+RUN apt-get update
+RUN apt-get install apache2 -y  # 설치할 것일지 선택하는 -y 필요
+ADD test.html /var/www/html     # test.html을 컨테이너의 /var/www/html 디렉토리에 추가
+WORKDIR /var/www/html
+RUN ["/bin/bash", "-c", "echo hello >> test2.html"]
+EXPOSE 80
+CMD apachectl -DFOREGROUND
+```
+
+### Dockerfile 빌드
+- 이미지 생성
+    ```powershell
+    # -t: 이미지 이름
+    # ./: 빌드할 Dockerfile의 위치
+    docker build -t mybuild:0.0 ./
+    ```
+
+- 빌드 컨텍스트
+    - Dockerfile이 위치한 디렉터리
+    - 이미지를 생성하는 데 필요한 파일, 소스코드, 메타데이터를 가짐
+    - 빌드 컨텍스트에는 필요한 파일만 있도록 주의 (속도가 느려지고, 호스트의 메모리를 지나치게 점유)
+    - .dockerignore 파일 작성을 통해 특정 파일을 제외할 수 있음
+- 컨테이너 생성과 커밋
+    - ADD, RUN 등의 명령어가 실행될 때마다 새로운 컨테이너가 하나씩 생성 및 삭제
+    - 명령어 줄 수 만큼의 새로운 이미지 레이어로 저장됨
+- 캐시를 이용한 이미지 빌드
+    - 이미지를 빌드한 후 다시 빌드를 진행하면 이전의 이미지 빌드에서 사용했던 캐시를 사용
+    - RUN git clone ...일 때는 리비전 관리가 일어나도 지정된 버전의 코드를 들고옴으로 주의
+    - --no-cache 옵션을 통해서 사용하지 않을 수 있음
+- 멀티 스테이지
+    - 하나의 Dockerfile 안에 여러 개의 FROM 이미지를 정의함으로써 최종 이미지의 크기를 줄이는 역할
+    - 필요한 파일만 최종 이미지 결과물에 포함시킴으로써 이미지 크기를 줄일 수 있음
+    ```powershell
+    FROM golang
+    ADD main.go /root
+    WORKDIR /root
+    RUN go build -o /root/mainApp /root/main.go
+
+    FROM alpine:latest
+    WORKDIR /root
+    COPY --from=0 /root/mainApp . 
+    # --from=0은 첫번째 FROM에서 빌드된 이미지의 최종 상태를 의미
+    CMD ["./mainApp"]
+    ```
+
+#### 기타 명령어
+- ENV, VOLUME, ARG
+    ```powershell
+    FROM ubuntu
+    ENV test /home  # Dockerfile에 사용될 환경변수를 지정
+    VOLUME /home dir1 /home/dir2  # 호스트와 공유할 컨테이너 내부의 디렉토리를 설정
+    ARG my_arg
+    ARG my_arg2=my_value2   # build 명령어에서 추가르 입력받아 사용할 변수
+
+    docker build --build-arg my_arg=/home -t myImage:0.0 ./
+    ```
+
+- Onbuild, Stopsignal
+    ```powershell
+    FROM ubuntu
+    ONBUILD RUN echo "onbuild" >> /onbuild_file
+    # 빌드된 이미지를 기반으로 하는 다른 이미지가 Dockerfile로 생성될 때 실행할 명령어
+    STOPSIGNAL SIGKILL
+    # 컨테이너가 정지될 때 사용할 시스템 콜의 종류를 지정 (기본: SIGTERM)
+    ```
+
+- ADD, COPY
+    - 둘 다 컨텍스트로 부터 이미지에 파일을 복사하는 기능
+    - 차이점
+        - COPY: 로컬 파일만 이미지에 추가 가능
+        - ADD: URL 및 tar 등의 파일에서도 파일을 추가 가능 (tar을 압축해제도 진행)
+    - ADD는 빌드 시점에서도 어떤 파일이 추가될 지 몰라서 COPY가 더 권장됨 
+
+#### Dockerfile 빌드시 주의할 점
+- \로 가독성을 높인다
+- .dockerignore 파일을 작성해 불필요한 파일을 빌드 컨텍스트에 포함하지 않는다
+- 빌드 캐시를 이용해 기존에 사용했던 이미지 레이어를 재사용한다
+- 불필요한 이미지 레이어를 주의한다
+    ```powershell
+    FROM ubuntu
+    RUN mkdir /test
+    RUN fallocate -l 100m /test/dummy   ## 해당 파일은 삭제됨에도 불구하고 이미지 레이어로 남아 용량이 커진다
+    RUN rm /test/dummy
+
+    FROM ubuntu 
+    RUN mkdir /test && \
+    fallocate -l 100m /test/dummy && \  ## &&을 통해서 하나의 이미지 레이어로 만든다
+    rm /test/dummy
+    ```
