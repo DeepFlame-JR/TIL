@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_14 TILs and counting..._
+_16 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
-- [DEKIT_Conference](Conference/DEKIT_Conference.md) - Thu Oct 20 21:03:06 2022 +0900
-- [WOOWACON_아키텍처](Conference/WOOWACON_아키텍처.md) - Wed Oct 19 22:37:50 2022 +0900
+- [WOOWACON_아키텍처_이벤트](Conference/WOOWACON_아키텍처_이벤트.md) - Fri Oct 21 18:36:29 2022 +0900
+- [WOOWACON_Kafka](Conference/WOOWACON_Kafka.md) - Fri Oct 21 18:36:29 2022 +0900
 
 ### Categories
 
@@ -40,7 +40,9 @@ _14 TILs and counting..._
 ### [Conference](#Conference)
 - [AWSKRUG_데이퍼플랫폼_최신기술](Conference/AWSKRUG_데이퍼플랫폼_최신기술.md)
 - [DEKIT_Conference](Conference/DEKIT_Conference.md)
+- [WOOWACON_Kafka](Conference/WOOWACON_Kafka.md)
 - [WOOWACON_아키텍처](Conference/WOOWACON_아키텍처.md)
+- [WOOWACON_아키텍처_이벤트](Conference/WOOWACON_아키텍처_이벤트.md)
 
 ### [Docker_K8S](#Docker_K8S)
 - [Docker](Docker_K8S/Docker.md)
