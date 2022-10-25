@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_16 TILs and counting..._
+_17 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [CKA_with_Practice_Tests](Docker_K8S/CKA_with_Practice_Tests.md) - Mon Oct 24 23:15:44 2022 +0900
 - [WOOWACON_아키텍처_이벤트](Conference/WOOWACON_아키텍처_이벤트.md) - Fri Oct 21 18:36:29 2022 +0900
-- [WOOWACON_Kafka](Conference/WOOWACON_Kafka.md) - Fri Oct 21 18:36:29 2022 +0900
 
 ### Categories
 
@@ -45,6 +45,7 @@ _16 TILs and counting..._
 - [WOOWACON_아키텍처_이벤트](Conference/WOOWACON_아키텍처_이벤트.md)
 
 ### [Docker_K8S](#Docker_K8S)
+- [CKA_with_Practice_Tests](Docker_K8S/CKA_with_Practice_Tests.md)
 - [Docker](Docker_K8S/Docker.md)
 
 [1]: https://simonwillison.net/2020/Apr/20/self-rewriting-readme/
