@@ -505,6 +505,7 @@ docker run -it --name c1 --hostname c1 \
 - CMD: 컨테이너가 시작될 때마다 실행할 명령어를 설정. Dockerfile에서 한 번만 사용 가능
 
 ```powershell
+# Dockerfile 내부
 FROM ubuntu
 MAINTAINER deepflame21
 LABEL "purpose"="practice"
@@ -515,25 +516,23 @@ WORKDIR /var/www/html
 RUN ["/bin/bash", "-c", "echo hello >> test2.html"]
 EXPOSE 80
 CMD apachectl -DFOREGROUND
+
+# Dockerfile 빌드를 통한 이미지 생성
+# -t: 이미지 이름
+# ./: 빌드할 Dockerfile의 위치
+docker build -t mybuild:0.0 ./
 ```
 
-### Dockerfile 빌드
-- 이미지 생성
-    ```powershell
-    # -t: 이미지 이름
-    # ./: 빌드할 Dockerfile의 위치
-    docker build -t mybuild:0.0 ./
-    ```
-
-- 빌드 컨텍스트
+#### Dockerfile 구성 요소
+- `빌드 컨텍스트`
     - Dockerfile이 위치한 디렉터리
     - 이미지를 생성하는 데 필요한 파일, 소스코드, 메타데이터를 가짐
     - 빌드 컨텍스트에는 필요한 파일만 있도록 주의 (속도가 느려지고, 호스트의 메모리를 지나치게 점유)
     - .dockerignore 파일 작성을 통해 특정 파일을 제외할 수 있음
-- 컨테이너 생성과 커밋
+- `컨테이너 생성과 커밋`
     - ADD, RUN 등의 명령어가 실행될 때마다 새로운 컨테이너가 하나씩 생성 및 삭제
-    - 명령어 줄 수 만큼의 새로운 이미지 레이어로 저장됨
-- 캐시를 이용한 이미지 빌드
+    - **명령어 줄 수 만큼의 새로운 이미지 레이어로 저장됨**
+- `캐시`를 이용한 이미지 빌드
     - 이미지를 빌드한 후 다시 빌드를 진행하면 이전의 이미지 빌드에서 사용했던 캐시를 사용
     - RUN git clone ...일 때는 리비전 관리가 일어나도 지정된 버전의 코드를 들고옴으로 주의
     - --no-cache 옵션을 통해서 사용하지 않을 수 있음
@@ -597,3 +596,130 @@ CMD apachectl -DFOREGROUND
     fallocate -l 100m /test/dummy && \  ## &&을 통해서 하나의 이미지 레이어로 만든다
     rm /test/dummy
     ```
+
+## 도커 데몬
+- 도커 클라이언트: API를 사용할 수 있도록 CLI를 제공하는 것
+- 도커 서버: 컨테이너를 생성/실행, 이미지 관리
+- 예시
+    1. 사용자가 docker -v 명령어 입력
+    1. 도커 클라이언트는 /var/run/docker/sock 유닉스 소켓을 사용해서 도커 데몬에 전달
+    1. 도커 데몬이 명령어를 파싱하고, 작업 수행 및 결과 알림
+
+### 도커 데몬 설정
+
+#### 도커 데몬 제어
+- -H: 도커 데몬의 API를 사용할 수 있는 방법을 추가
+- IP 주소와 포트 번호 > Docker Remote API로 도커 제어 가능
+    - 도커 클라이언트를 사용할 수 없음
+- 다수 입력도 가능
+```powershell
+dockerd -H unix:///var/run/docker.sock
+dockerd -H tcp://0.0.0.0:1375
+dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:1375
+```
+
+#### 도커 스토리지 드라이버
+- 도커 컨테이너와 이미지를 저장하고 관리함
+- 하나만 선택해서 적용된 스토리지 드라이버에 따라 컨테이너와 이미지가 별도로 생성
+- 개발하는 환경에 따라서 결정됨 (overlay2, deviceampper, AUFS, Btrfs 등)
+- 원리
+    - CoW(Copy-on-Write)
+        - 스냅샷 공간에 원본 파일을 복사한 뒤 쓰기 요청을 반영
+        - 파일을 읽는 작업, 파일을 스냅샷 공간에 쓰고 변경 사항을 쓰는 작업 > 2번 작업 (오버헤드)
+    - RoW(Redirect-on-Write)
+        - 1번의 쓰기 방식
+        - 원본 파일은 스냅샷 파일로 묶고, 변경 사항을 새로운 장소에 할당받아 덮어씀
+        - 스냅샷 파일은 그대로 사용하되 새로운 블록은 변경 사항으로 써 사용
+    - 이미지 레이어는 `RoW 방식`으로 변경 사항을 기록하여 구성된다
+- 종류
+    1. AUFS
+        - 데비안 계열의 기본 드라이버
+        - 오랜 기간 사용되어 안정성이 우수함
+        - 커널에 포함돼 있지 않아, 일부 OS에서 활용 X
+        - 여러 개의 이미지 레이어를 유니언 마운트 지점으로 제공, 컨테이너 레이어는 여기에 마운트해서 이미지를 읽기 전용으로 사용
+        - 실행, 삭제 등 컨테이너 관련 수행 작업이 매우 빠름으로 PaaS에 적합한 드라이버
+        <img src="https://user-images.githubusercontent.com/40620421/196187561-ccac001d-09e1-4e29-b07b-99f8750f963a.png" width="500">
+    1. OverlaysFS
+        - 레드햇 계열 및 라즈비안, 우분투 등 대부분의 OS의 기본 드라이버
+        - AUFS와 비슷한 원리로 동작 But, 좀 더 간단한 구조, 좋은 성능
+        - lowerdir: 도커의 이미지 레이어
+        - upperdir: 컨테이너 레이어, 변경 사항을 기록
+        - mergeddir: 여러 개의 이미지 레이어를 하나의 컨테이너 마운트 지점에서 통합해 사용
+    1. Btrfs 
+        - 리눅스 파일시스템 중 하나
+        - SSD 최적화, 데이터 압축 등 다양한 기능을 제공, 우수한 성능
+        - 서브볼륨: 이미지 가장 아래에 있는 베이스 레이어
+        - 스냅샷: 서브볼륨 위에 쌓이는 자식 레이어
+
+# 3. 도커 컴포즈
+- 여러 개의 컨테이너를 하나의 `프로젝트`로서 다룰 수 있는 작업 환경 제공
+- 각 컨테이너의 의존성, 네트워크, 볼륨 등 정의 가능
+- 컨테이너 수 유동적으로 조절 가능 (컨테이너 서비스 디스커버리도 이루어짐)
+    - 한 노드가 정지되면 노드에서 실행되고 있던 컨테이너를 다른 노드에서 실행하도록 설정
+
+## 도커 컴포즈 활용
+- YAML 파일을 읽어 컨테이너 생성
+    - 프로젝트 이름을 명시하지 않으면 현재 디렉토리의 이름을 갖음
+
+```powershell
+docker-compose \
+scale mysql=2   # mysql 서비스를 2개 생성한다
+-p myProject    # 프로젝트 이름 설정
+-f /home/my_compose_file.yml    # yaml 파일 설정
+up -d
+```
+
+### YAML 파일 작성
+```yaml
+version: '3.0'  # yaml 파일의 버전 정의
+services:       # 서비스 정의
+    database:
+        image: mysql
+        environment:    # 환경 변수 설정
+            MYSQL_ROOT_PASSWORD: mypw
+            MYSQL_DATABASE_NAME: mydb
+    web:
+        image: web
+        links:      # 다른 서비스로 접근할 수 있도록 정의 (SERVICE:ALIAS)
+            - db:database
+            - redis
+        command:    # 컨테이너가 실행될 때 수행할 명령어 (아래 두가지로 정의 가능)
+            apachectl -DFOREGROUND
+            [apachectl, -DFOREGROUND]   
+        depend_on:  # 의존 관계를 나타냄. 명시된 컨테이너가 생성되고 실행됨
+            - mysql 
+        ports:      # 포트 설정. 단일 호스트 환경에서 특정 포트 지정하면 컨테이너 수를 늘릴 수 없음
+            - "8080"
+            - "8081-8085"
+            - "80:80"
+    web2:   
+        build: ./composetest    # build 항목에 정의된 Dockerfile에서 이미지를 빌드
+        image: web              # 빌드된 이미지 이름은 web으로 설정됨
+        networks:
+            - mynetwork
+        volumes:
+            - myvolume: /var/www/html
+
+networks:   # yaml 파일에서 네트워크 설정
+    mynetwork:
+        driver: overlay
+        driver_opt:
+            subnet: "172.20.0.0/16"
+            IPAddress: "10.0.0.2"
+    ipam:   # IPAM(IP Address Manager)를 위해 사용할 수 있는 옵션
+        driver: mydrive
+        config:
+            subnet: "172.20.0.0/16"
+            ip_range: 172.20.5.0/24
+            gateway: 172.20.5.1
+    external_ip:    # 기존 네트워크를 사용
+        external: true
+
+volumes:    # 볼륨 설정 (어떠한 설정도 하지 않으면 local로 설정)
+    driver: flocker
+        driver_opts:
+            opt: "1"
+            opt2: 2
+    myvolume:   # 기존 볼륨 사용
+        external: true
+```
