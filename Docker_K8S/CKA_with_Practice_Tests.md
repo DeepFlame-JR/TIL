@@ -98,6 +98,36 @@ kubectl exec etcd-master -n kube-system -- sh -c "ETCDCTL_API=3 etcdctl get / --
     - 각 노드에서 생성되는 프로세스
     - 지속적으로 새로운 서비스를 찾음 (IPTABLES 방식에 의하면 서비스와 IP를 연결)
 
+## 실습
+
+#### 명령어
+`kubectl [COMMAND] [TYPE] [NAME] [FLAGS] `
+1. COMMAND: create, get, describe 와 같은 operation 종류
+    - get: 리소스 리스트를 출력할 때 사용
+    - describe: 리소스와 name에 해당하는 자세한 정보 출력(IP, 작업내용 등)
+    - edit : Pod, Service, PVC 등 resource에 설정을 변경할 때 사용
+    - create: resource를 생성할 때 사용
+    - apply: resource를 적용할 때 사용
+    - delete: resource를 제거할 때 사용
+    - top: node의 cpu, memory 사용량 확인
+1. TYPE : pods, nodes 등의 타입
+    - pods, nodes, services(svc), storageclass(sc), pvc(영구볼륨클레임), pv(영구볼륨)
+    - https://kubernetes.io/docs/reference/kubectl/overview/#resource-types
+- NAME : 특정 리소스의 이름 선언
+- FLAGS : 추가적인 옵션 선언
+
+``` powershell
+kubectl get pods
+kubectl run nginx --image nginx
+kubectl describe pod newpods
+
+# 해당 명령어를 실행하는 yaml 샘플 파일을 만든다
+kubectl run redis --image=redis--dry - run = client - o yaml > redis - production.yaml
+
+kubectl create - f redis - production.yaml # -f (file)
+kubectl apply - f redis - production.yaml
+```
+
 ### POD
 - 컨테이너를 하나 이상 모아놓은 것. 쿠버네티스 애플리케이션의 최소 단위
     - 쿠버네티스는 워커노드에 컨테이너를 직접 배포하지 않음 → Pod로 캡슐화하여 배포
@@ -133,3 +163,139 @@ kubectl exec etcd-master -n kube-system -- sh -c "ETCDCTL_API=3 etcdctl get / --
     kubectl get pods
     kubectl describe pod myapp-pod
     ```
+
+### Replication Controller
+- 클러스터의 여러 노드에 걸쳐있음
+    - 여러 Pod 간에 균형을 맞추는 것에 도움
+- 이유
+    - 기존 Pod가 실패했을 때, 새 Pod를 자동으로 불러옴
+    - 지정된 수의 Pod가 실행 중인지 보장
+    - 여러 Pod를 만들어 로드를 공유
+    - 이용자가 늘어난다면 부하의 균형을 맞추기 위해 추가 Pod를 배포
+
+```yaml
+# rc-definition.yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+    name: myapp-rc
+    labels:
+        app: myapp
+        type: front-end
+spec:
+    template:
+        # pod-definition.yaml 일부 가져옴
+        metadata:
+            name: myapp-pod
+            labels:
+                app: myapp
+                type: front-end
+        spec:
+            containers: # List
+            - name: nginx-container
+            image: nginx
+        replicas: 3
+``` 
+
+```powershell
+kubectl create - f rc-definition.yaml
+kubectl get replicationcontroller
+kubectl get pods
+```
+
+### ReplicaSet
+- 새로운 복제 권장 방식
+    - Replication Controller와 유사하지만, 다름
+- 아래에 있는 Pod 정의 및 컨트롤 가능
+    - 기존 Pod를 모니터링하는 데에 활용 가능
+    - Pod 정의했을 때, meta data를 활용해서 탐색한 것 처럼 selector로 탐색 가능
+    - matchLabels의 경우, template 내 labels 값 중 하나의 값을 가져야함
+
+```yaml
+# replicaset-definition.yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+    name: myapp-rs
+    labels:
+        app: myapp
+        type: front-end
+spec:
+    template:
+        # pod-definition.yaml 일부 가져옴
+        metadata:
+            name: myapp-pod
+            labels:
+                app: myapp
+                type: front-end
+        spec:
+            containers: # List
+            - name: nginx-container
+            image: nginx
+        replicas: 3
+selector:
+    matchLabels:
+        type: front-end
+``` 
+
+```powershell
+kubectl create - f replicaset - definition.yaml
+kubectl get replicaset
+kubectl get rs
+kubectl get pods
+
+# ReplicaSet 내 Pod 정보
+kubectl describe pod pod-name
+# ReplicaSet 의 정보 변경
+kubectl edit replicaset rs-name
+```
+
+#### Scale
+- 복제본 수 업데이트 
+    1. yaml 파일에서 replicas를 6으로 변경 > `kubectl replace - f replicaset - definition.yaml`
+    1. `kubectl scale--replicas = 6 - f replicaset - definition.yaml`
+    1. `kubectl scale--replicas = 6 replicaset myapp - replicaset`
+
+### Deployment
+- 새롭게 개발된 버전을 배포하는 방법이 필요
+    - 변경사항을 반영 후, 한꺼번에 POD를 껐다가 켤 수도 있음
+- 롤링 업데이트
+    - 인스턴스 하나하나씩 업데이트 진행한다
+    - 한꺼번에 업데이트했을 때 나타날 에러 방지
+- **Deployment > Replica Set > POD(캡슐화된 인스턴스)**
+
+```yaml
+# deplyment-definition.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: myapp-deployment
+    labels:
+        app: myapp
+        type: front-end
+spec:
+    template:
+        # pod-definition.yaml 일부 가져옴
+        metadata:
+            name: myapp-pod
+            labels:
+                app: myapp
+                type: front-end
+        spec:
+            containers: # List
+            - name: nginx-container
+            image: nginx
+        replicas: 3
+selector:
+    matchLabels:
+        type: front-end
+``` 
+
+```powershell
+kubectl create - f deployment-definition.yaml
+kubectl get deployments
+kubectl get rs
+kubectl get pods
+
+kubectl get all
+```
