@@ -1,4 +1,4 @@
-CKA_with_Practice_Tests
+2_Core_Concept
 
 # 1. Introduce
 
@@ -122,7 +122,7 @@ kubectl run nginx --image nginx
 kubectl describe pod newpods
 
 # 해당 명령어를 실행하는 yaml 샘플 파일을 만든다
-kubectl run redis --image=redis--dry - run = client - o yaml > redis - production.yaml
+kubectl run redis --image=redis --dry-run=client -o yaml > redis - production.yaml
 
 kubectl create - f redis - production.yaml # -f (file)
 kubectl apply - f redis - production.yaml
@@ -299,3 +299,156 @@ kubectl get pods
 
 kubectl get all
 ```
+
+### Services
+- 애플리케이션 내부와 외부의 다양한 구성 요소 간에 통신 가능
+- 프론트엔드, 백엔드, DB Pod의 연결 도움
+- 종류
+    1. NodePort: 내부 포트를 만들어 노드에 액세스 할 수 있도록 함
+        - NodePort > Port > TargetPort (노드 포트를 Pod의 포트로 매핑)
+        - 노드에 다수의 Pod가 존재해도 알아서 부하를 분산함 (label은 같음)
+        - 다수 노드에 분포하더라도 알아서 부하를 분산함
+        ```yaml
+        spec:
+            type: NodePort
+        ports:
+            - targetProt: 80
+            port: 80  # 필수
+            nodePort: 30008  # 지정하지 않을 시에 가능한 포트 중 랜덤으로 할당됨
+        selector:  # Pod 식별
+            app: myapp
+            type: front-end
+        ```
+
+    1. ClusterIP: 서비스가 가상 IP를 생성하여 서로 다른 서비스의 통신을 가능하게 함
+        - 프론트엔드 Pods > (Cluster IP) > 백엔드 Pods > (Cluster IP) > DB Pods
+        ```yaml
+        spec:
+            type: ClusterIP  # Serivce의 기본 유형
+        ports:
+            - targetProt: 80
+            port: 80  # service export port
+        selector:  # Pod 식별
+            app: myapp
+            type: back-end
+        ```
+    
+    1. LoadBalancer: 프로비저닝을 통해 부하를 분산
+        - AWS, GCP에서 지원함
+        ```yaml
+        spec:
+            type: LoadBalancer
+        ports:
+            - targetProt: 80
+            port: 80  # 필수
+            nodePort: 30008
+        ```
+
+### Namespace
+- Cluster, Deployments, Pods 등 모든 요소들을 포함하는 독립적인 공간
+    - 처음 생성될 때 Pod, Service를 생성
+    - 각 Namespace에 고유한 정책 집합이 있을 수 있음
+    - 기업 또는 운영 목적일 때, 고려할 수 있음
+- 다른 Namespace를 참조하기 위해서는 `servicename.namespace.svc.cluster.local` 형식을 따름
+    - 예 `mysql.connect("db-service.dev.svc.cluster.local")`
+- 명령어 뒤에 `--namespace={namespaceName}` `-n={namespaceName}` 을 붙여 다른 namespace를 컨트롤할 수 있음
+    - `kubectl get pods --namespace=dev`
+    - `kubectl create -f pod-definition.yml --namespace=dev`
+    - 또는 yml 파일의 metadata에 포함
+        ```yaml
+        metadata:
+            name: myapp-pod
+            namespace: dev
+        ```
+    - 전체보기 `kubectl get pods --all-namespaces`
+- 기본적으로 default로 설정됨
+    - 전환 `kubectl config set-context $(kubectl config current-context) -n=dev`
+- ResourceQuota: 다수 노드에서 namespace가 리소스를 일정한 할당량만 사용하도록 설정
+    ```yaml
+    apiVersion: v1
+    kind: ResourceQuota
+    metadata:
+        name: compute-quota
+        namespace: dev
+    spec:
+        hard:
+            pods: "10"
+            requests.cpu: "4"
+            requests.memory: 5Gi
+            limits.cpu: "10"
+            limits.memory: 10Gi
+    ```
+
+### Imperative, Declarative
+1. Imperative (명령형 방식)
+    - `어떻게 할것인가`가 우선
+        - 단계별 지침을 받고 따름
+    - 단계 실행 중에 발생하는 예외상황에 취약
+    - 명령어를 유지하기 어렵기 때문에 복잡한 환경에 취약
+    - 예시
+        ```
+        1. `web-server` VM을 프로비저닝해라
+        2. NGINX를 설치해라
+        3. 포트를 8080으로 설정해라 
+        ...
+        ```
+    - 명령어
+
+1. Declarative (선언형 방식)
+    - `무엇을 할 것인가`가 우선
+        - 최종 결과만 선언하고, 단계별 지침을 제공하지 않음
+    - 필요한 변경사항만 변경하고, 나머지는 시스템에 맡김
+    - 예시
+        ```
+        VM Name: web-server
+        package: nginx
+        Port: 8080
+        ... 
+        ```
+    
+#### KubeFlow에서의 Imperative, Declarative
+
+```powershell
+# Imperative
+
+# Create Objects
+kubectl create -f nginx.yaml
+
+# Edit
+kubectl edit deplyment nginx
+kubectl replace -f nginx.yaml
+kubectl replace --force -f nginx:yaml
+
+# Error
+# 같은 내용이 반복되면 객체가 이미 존재하기 때문에 에러가 나타난다
+kubectl create -f nginx.yaml
+
+# Declarative
+# Create Objects
+# 객체가 존재하지 않을 때 생성
+kubectl apply -f nginx.yaml
+
+# Edit
+# yaml의 업데이트 내용을 적용함
+kubectl apply -f nginx.yaml
+```
+
+
+#### 약어
+`kubectl api-resources`로 확인 가능
+
+NAME|SHORTNAMES
+--|--
+namespaces|ns
+nodes|no
+pods|po
+replicasets|rs
+serviceaccounts|sa
+services|svc
+configmaps|cm
+daemonsets|ds
+deployments|deploy
+horizontalpodautoscalers|hpa
+ingresses|ing
+persistentvolumeclaims|pvc
+persistentvolumes|pv
