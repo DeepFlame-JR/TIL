@@ -433,6 +433,27 @@ kubectl apply -f nginx.yaml
 kubectl apply -f nginx.yaml
 ```
 
+## Tip for Command
+1. POD
+    ```powershell
+    kubectl run nginx --image=nginx
+    kubectl run nginx --image=nginx --dry-run=client -o yaml > pod-definition.yaml
+    ```
+1. Deployment
+    ```powershell
+    kubectl create deployment nginx --image=nginx
+    kubectl create deployment nginx --image=nginx --dry-run=client -o yaml
+    kubectl create deployment nginx --image=nginx --replicas=4
+
+    # replica 4
+    kubectl scale deployment nginx --replicas=4
+    ```
+1. Service
+    ```powershell
+    # type 미지정 시, Cluster IP
+    kubectl expose pod redis --port=6379 --name redis-service --dry-run=client -o yaml
+    kubectl expose pod nginx --type=NodePort --port=80 --name=nginx-service --dry-run=client -o yaml
+    ```
 
 #### 약어
 `kubectl api-resources`로 확인 가능
