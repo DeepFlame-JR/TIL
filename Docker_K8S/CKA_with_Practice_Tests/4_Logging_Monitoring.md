@@ -18,4 +18,9 @@
 
 ### Application Logging
 - pod Log보기
-    `kubectl logs -f podName containerName`
+    ```powershell
+    kubectl logs podName containerName
+    # 스트림 모드
+    kubectl logs -f podName containerName
+    ```
+    
