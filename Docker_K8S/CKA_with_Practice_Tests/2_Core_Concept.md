@@ -118,6 +118,9 @@ kubectl exec etcd-master -n kube-system -- sh -c "ETCDCTL_API=3 etcdctl get / --
 
 ``` powershell
 kubectl get pods
+kubectl get pods wc -l  # 행의 개수
+kubectl get pods -o wide  # 더 많은 열 표시
+
 kubectl run nginx --image nginx
 kubectl describe pod newpods
 
