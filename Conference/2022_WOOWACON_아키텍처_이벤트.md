@@ -1,4 +1,4 @@
-WOOWACON_아키텍처_이벤트
+2022_WOOWACON_아키텍처_이벤트
 - WOOWACON2022 (https://woowacon.com/) (https://www.youtube.com/watch?v=b65zIH7sDug&t=11s)
 - 2022.10.20 권용근 (회원 플랫폼 팀)
 

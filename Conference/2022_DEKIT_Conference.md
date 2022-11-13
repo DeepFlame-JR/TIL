@@ -1,4 +1,4 @@
-DEKIT_Conference
+2022_DEKIT_Conference
 
 Great PeoPle Data Engineering Confrence (https://school.programmers.co.kr/learn/courses/15230)
 

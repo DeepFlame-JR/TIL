@@ -1,4 +1,4 @@
-WOOWACON_Kafka
+2022_WOOWACON_Kafka
 - WOOWACON2022 (https://woowacon.com/) (https://www.youtube.com/watch?v=XyuqoWUCdGA&t=660s)
 - 2022.10.20 김대호 (클라우드 플랫폼 개발팀)
 

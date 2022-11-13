@@ -1,4 +1,4 @@
-WOOWACON_아키텍처
+2022_WOOWACON_아키텍처
 - WOOWACON2022 (https://woowacon.com/) (https://www.youtube.com/watch?v=saxHxoUeeSw)
 - 2022.10.19 김현수 (셀러서비스실 주문접수채널팀)
 

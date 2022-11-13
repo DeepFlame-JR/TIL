@@ -1,4 +1,4 @@
-AWSKRUG_데이퍼플랫폼_최신기술
+2022_AWSKRUG_데이퍼플랫폼_최신기술
 - AWS 한국 사용자 모임 (https://awskrug.github.io/)  
 - 2022.09.21 강웅석
 
