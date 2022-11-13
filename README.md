@@ -4,19 +4,20 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_16 TILs and counting..._
+_19 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
-- [2022_AWSKRUG_데이퍼플랫폼_최신기술](Conference/2022_AWSKRUG_데이퍼플랫폼_최신기술.md) - Mon Nov 14 00:06:33 2022 +0900
-- [2022_WOOWACON_아키텍처_이벤트](Conference/2022_WOOWACON_아키텍처_이벤트.md) - Mon Nov 14 00:06:33 2022 +0900
+- [3_Scheduling](CKA_with_Practice_Tests/3_Scheduling.md) - Mon Nov 14 00:09:04 2022 +0900
+- [4_Logging_Monitoring](CKA_with_Practice_Tests/4_Logging_Monitoring.md) - Mon Nov 14 00:09:04 2022 +0900
 
 ### Categories
 
 - [AWS](#AWS)
 - [BigData](#BigData)
+- [CKA_with_Practice_Tests](#CKA_with_Practice_Tests)
 - [CS](#CS)
 - [Conference](#Conference)
 - [Docker_K8S](#Docker_K8S)
@@ -29,6 +30,11 @@ _16 TILs and counting..._
 ### [BigData](#BigData)
 - [1_Basic_of_BigData](BigData/1_Basic_of_BigData.md)
 - [2_Technical_BigData](BigData/2_Technical_BigData.md)
+
+### [CKA_with_Practice_Tests](#CKA_with_Practice_Tests)
+- [2_Core_Concept](CKA_with_Practice_Tests/2_Core_Concept.md)
+- [3_Scheduling](CKA_with_Practice_Tests/3_Scheduling.md)
+- [4_Logging_Monitoring](CKA_with_Practice_Tests/4_Logging_Monitoring.md)
 
 ### [CS](#CS)
 - [1_Design_Pattern_and_Paradigm](CS/1_Design_Pattern_and_Paradigm.md)
