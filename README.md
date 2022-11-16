@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_19 TILs and counting..._
+_20 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [2022_Upstage_추천AI](Conference/2022_Upstage_추천AI.md) - Tue Nov 15 00:06:56 2022 +0900
 - [3_Scheduling](CKA_with_Practice_Tests/3_Scheduling.md) - Mon Nov 14 00:09:04 2022 +0900
-- [4_Logging_Monitoring](CKA_with_Practice_Tests/4_Logging_Monitoring.md) - Mon Nov 14 00:09:04 2022 +0900
 
 ### Categories
 
@@ -46,6 +46,7 @@ _19 TILs and counting..._
 ### [Conference](#Conference)
 - [2022_AWSKRUG_데이퍼플랫폼_최신기술](Conference/2022_AWSKRUG_데이퍼플랫폼_최신기술.md)
 - [2022_DEKIT_Conference](Conference/2022_DEKIT_Conference.md)
+- [2022_Upstage_추천AI](Conference/2022_Upstage_추천AI.md)
 - [2022_WOOWACON_Kafka](Conference/2022_WOOWACON_Kafka.md)
 - [2022_WOOWACON_아키텍처](Conference/2022_WOOWACON_아키텍처.md)
 - [2022_WOOWACON_아키텍처_이벤트](Conference/2022_WOOWACON_아키텍처_이벤트.md)
