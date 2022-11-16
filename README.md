@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_20 TILs and counting..._
+_21 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [5_Application_Lifecycle_Management](CKA_with_Practice_Tests/5_Application_Lifecycle_Management.md) - Wed Nov 16 22:44:47 2022 +0900
 - [2022_Upstage_추천AI](Conference/2022_Upstage_추천AI.md) - Tue Nov 15 00:06:56 2022 +0900
-- [3_Scheduling](CKA_with_Practice_Tests/3_Scheduling.md) - Mon Nov 14 00:09:04 2022 +0900
 
 ### Categories
 
@@ -35,6 +35,7 @@ _20 TILs and counting..._
 - [2_Core_Concept](CKA_with_Practice_Tests/2_Core_Concept.md)
 - [3_Scheduling](CKA_with_Practice_Tests/3_Scheduling.md)
 - [4_Logging_Monitoring](CKA_with_Practice_Tests/4_Logging_Monitoring.md)
+- [5_Application_Lifecycle_Management](CKA_with_Practice_Tests/5_Application_Lifecycle_Management.md)
 
 ### [CS](#CS)
 - [1_Design_Pattern_and_Paradigm](CS/1_Design_Pattern_and_Paradigm.md)
