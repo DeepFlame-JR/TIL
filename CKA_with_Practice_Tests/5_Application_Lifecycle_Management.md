@@ -91,13 +91,56 @@
         - name: envar-demo-container
           image: gcr.io/google-samples/node-hello:1.0
           envFrom:
-          - configMapRef:
+          - configMapRef:   # 전체 가져오기
               name: config-name
           - configMap Ref:  # 하나만 가져올 수 있음
               name: config-many-things
               key: one-of-them
-          volumes:
+          volumes:  # 볼륨을 이용하여 가져오기
           - name: app-config-volume
             configMap:
               name: app-config
+        ```
+- Secrets
+    - 민감한 정보를 저장하는 데에 사용 (DB 계정, 비밀번호 등)
+        - github에 푸시하지 않도록 주의
+        - etcd에서는 암호화가 진행되지 않음 (암호화 구성 사용 권장)
+        - AWS, GCP 등의 시스템을 활용하는 것이 권장됨
+    - 명령형
+        ```powershell
+        kubectl create secret generic 
+        prod-db-secret --from-literal=username=produser 
+                    --from-literal=password=Y4nys7f11
+
+        kubectl create secret generic 
+        prod-db-secret --from-file=secrets.properties
+        ```
+    - 선언형
+        ```yaml
+        apiVersion: v1
+        kind: Secret
+        metadata:
+            name: mysecret
+        type: Opaque
+        data:
+            USER_NAME: YWRtaW4=  # 인코딩 된 값
+            PASSWORD: MWYyZDFlMmU2N2Rm
+
+            # 인코딩: echo -n 'produser' | base64
+            # 디코딩: echo -n 'produser' | base64 --decode
+        ```
+    - pod에 적용
+        ```yaml
+        apiVersion: v1
+        kind: Pod
+        metadata:
+            name: secret-test-pod
+        spec:
+            containers:
+                - name: test-container
+                image: registry.k8s.io/busybox
+                envFrom:
+                - secretRef:    # secret 가져오기
+                    name: mysecret
+        restartPolicy: Never
         ```
