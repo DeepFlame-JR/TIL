@@ -120,6 +120,7 @@ kubectl exec etcd-master -n kube-system -- sh -c "ETCDCTL_API=3 etcdctl get / --
 kubectl get pods
 kubectl get pods wc -l  # 행의 개수
 kubectl get pods -o wide  # 더 많은 열 표시
+kubectl get pods -A  # 모든 NameSpace에 있는 pods 표시
 
 kubectl run nginx --image nginx
 kubectl describe pod newpods
@@ -127,8 +128,11 @@ kubectl describe pod newpods
 # 해당 명령어를 실행하는 yaml 샘플 파일을 만든다
 kubectl run redis --image=redis --dry-run=client -o yaml > redis - production.yaml
 
-kubectl create - f redis - production.yaml # -f (file)
-kubectl apply - f redis - production.yaml
+kubectl create -f redis-production.yaml # -f (file)
+kubectl apply -f redis-production.yaml
+
+# 강제로 해당 yaml에 있는 내용을 반영한다
+kubectl replace --force -f kubectl-edit-1764306979.yaml
 ```
 
 ### POD

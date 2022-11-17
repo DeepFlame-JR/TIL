@@ -5,6 +5,11 @@
 - 원하는 노드에 할당되도록 할 수 있는가?
 - 기본 스케줄러 또는 확장 스케줄러를 활용할 수 있음
 
+```powershell
+k get nodes 
+ssh [ip-address] >> 해당 노드로 이동할 수 있음
+```
+
 ### Manual Schedule
 - 스케줄러는 생성된 Pod를 사용가능한 Worker Node에 할당	
     - 스케줄러가 제대로 동작하지 않는다면 Node가 할당되지 않음
@@ -207,15 +212,16 @@ Node에 Pod가 어떻게 스케줄링되는지 알아보자
     ```
 
 ### Static Pods
-- kube API 서버 등의 K8S의 요소의 개입없이 만들어지는 Pod
-- 모든 워커 노드는 `kubelet` `Docker`을 가짐
-    - kubelet은 kube API 서버없이 `Pod`를 생성할 수 있음
+- kube API 서버 등의 K8S의 요소의 개입없이 노드에서 만들어지는 Pod
+    - 이름에 마지막에는 노드 이름이 있음 (kube-apiserver-`controlplane`)
+    - 특정 노드에서 만들어지기에 Scheduler에서 독립적
+    - Kube API를 통해서 편집 불가능 (읽기 전용)
+- kubelet은 kube API 서버없이 `Pod`를 생성할 수 있음
+    - 모든 워커 노드는 `kubelet` `Docker`을 가짐
     - 워커 노드의 Directory에 yaml 파일 생성 > kubelet이 주기적으로 확인 후 Pod 생성
         - yaml 파일을 수정하면 Pod를 다시 생성
         - yaml 파일을 삭제하면 Pod를 제거
     - `docker ps`를 통해서 확인 가능
-    - Kube API를 통해서 편집 불가능 (읽기 전용)
-    - Scheduler에 독립적
 - 경로 설정
     - `kubelet.service`에서 설정 가능
         1. `--pod-manifest-path=/etc/Kubernetes/manifests`
