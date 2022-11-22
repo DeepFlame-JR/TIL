@@ -38,8 +38,21 @@
         ENTRYPOINT ["sleep"]  # Dockerfile에 추가
         CMD ["5"]  # 기본 값 설정(옵션)
         docker run ubuntu-sleeper 10  # sleep 명령은 그대로고 매개변수만 전달됨
-        docker run --entrypoint sleep2.0 ubuntu-sleeper 10 # sleep 명령어도 변경 가능
+        docker run --name ubuntu-sleeper --entrypoint sleep2.0 ubuntu-sleeper 10 # sleep 명령어도 변경 가능
         ```
+- In Pod
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+        name: ubuntu-sleeper-pod
+    spec:
+        containers:
+            - name: ubuntu-sleeper
+              image: ubuntu-sleeper
+              commans: ["sleep2.0"]
+              args: ["10"]
+    ```
 
 ### K8S 환경 변수 설정
 - env 속성 아래 정의
@@ -93,7 +106,7 @@
           envFrom:
           - configMapRef:   # 전체 가져오기
               name: config-name
-          - configMap Ref:  # 하나만 가져올 수 있음
+          - configMapRef:  # 하나만 가져올 수 있음
               name: config-many-things
               key: one-of-them
           volumes:  # 볼륨을 이용하여 가져오기
@@ -144,3 +157,9 @@
                     name: mysecret
         restartPolicy: Never
         ```
+
+### Multi-Container Pods
+- 함께 필요한 서비스를 묶음
+    - Micro Service 단위로 생각했을 때의 서비스 
+- 같은 네트워크, 볼륨 등을 공유함
+- spec > containers 내에 많은 컨테이너를 선언함으로써 구현 가능
