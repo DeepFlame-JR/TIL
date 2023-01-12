@@ -4,7 +4,7 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_22 TILs and counting..._
+_23 TILs and counting..._
 
 ---
 
@@ -37,6 +37,7 @@ _22 TILs and counting..._
 - [4_Logging_Monitoring](CKA_with_Practice_Tests/4_Logging_Monitoring.md)
 - [5_Application_Lifecycle_Management](CKA_with_Practice_Tests/5_Application_Lifecycle_Management.md)
 - [6_Cluster_Maintenance](CKA_with_Practice_Tests/6_Cluster_Maintenance.md)
+- [8_Storage](CKA_with_Practice_Tests/8_Storage.md)
 
 ### [CS](#CS)
 - [1_Design_Pattern_and_Paradigm](CS/1_Design_Pattern_and_Paradigm.md)
