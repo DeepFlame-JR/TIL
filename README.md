@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_23 TILs and counting..._
+_24 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [머신러닝_엔지니어_실무](MLOps/머신러닝_엔지니어_실무.md) - Thu Jan 12 22:01:35 2023 +0900
 - [5_Application_Lifecycle_Management](CKA_with_Practice_Tests/5_Application_Lifecycle_Management.md) - Wed Nov 16 22:44:47 2022 +0900
-- [2022_Upstage_추천AI](Conference/2022_Upstage_추천AI.md) - Tue Nov 15 00:06:56 2022 +0900
 
 ### Categories
 
@@ -21,6 +21,7 @@ _23 TILs and counting..._
 - [CS](#CS)
 - [Conference](#Conference)
 - [Docker_K8S](#Docker_K8S)
+- [MLOps](#MLOps)
 
 ### [AWS](#AWS)
 - [AWS_Technical_Essentials](AWS/AWS_Technical_Essentials.md)
@@ -56,6 +57,9 @@ _23 TILs and counting..._
 
 ### [Docker_K8S](#Docker_K8S)
 - [Docker](Docker_K8S/Docker.md)
+
+### [MLOps](#MLOps)
+- [머신러닝_엔지니어_실무](MLOps/머신러닝_엔지니어_실무.md)
 
 [1]: https://simonwillison.net/2020/Apr/20/self-rewriting-readme/
 [2]: https://github.com/jbranchaud/til
