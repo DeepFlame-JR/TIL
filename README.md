@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_24 TILs and counting..._
+_25 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [2023_모두의연구소_글로벌_MLOps트렌드](Conference/2023_모두의연구소_글로벌_MLOps트렌드.md) - Tue Mar 21 20:49:01 2023 +0900
 - [머신러닝_엔지니어_실무](MLOps/머신러닝_엔지니어_실무.md) - Thu Jan 12 22:01:35 2023 +0900
-- [5_Application_Lifecycle_Management](CKA_with_Practice_Tests/5_Application_Lifecycle_Management.md) - Wed Nov 16 22:44:47 2022 +0900
 
 ### Categories
 
@@ -54,6 +54,7 @@ _24 TILs and counting..._
 - [2022_WOOWACON_Kafka](Conference/2022_WOOWACON_Kafka.md)
 - [2022_WOOWACON_아키텍처](Conference/2022_WOOWACON_아키텍처.md)
 - [2022_WOOWACON_아키텍처_이벤트](Conference/2022_WOOWACON_아키텍처_이벤트.md)
+- [2023_모두의연구소_글로벌_MLOps트렌드](Conference/2023_모두의연구소_글로벌_MLOps트렌드.md)
 
 ### [Docker_K8S](#Docker_K8S)
 - [Docker](Docker_K8S/Docker.md)
