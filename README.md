@@ -4,7 +4,7 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_25 TILs and counting..._
+_26 TILs and counting..._
 
 ---
 
@@ -60,6 +60,7 @@ _25 TILs and counting..._
 - [Docker](Docker_K8S/Docker.md)
 
 ### [MLOps](#MLOps)
+- [Helm](MLOps/Helm.md)
 - [머신러닝_엔지니어_실무](MLOps/머신러닝_엔지니어_실무.md)
 
 [1]: https://simonwillison.net/2020/Apr/20/self-rewriting-readme/
