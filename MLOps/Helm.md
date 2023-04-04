@@ -38,4 +38,92 @@ helm pull bitnami/tomcat --version 10.5.17
 tar -xf ./tomcat-10.5.17.tgz
 helm install my-tomcat . --set persistence.enabled=false
 ```
-    
+
+
+## Chart Template
+
+```shell
+# 차트 생성 
+# Chart.yaml, values.yaml
+# templates (NOTES,txt, _helpers.tpl, 각종 yaml 파일)
+helm create mychart
+
+# 차트 조회
+# 주석을 제외하고 보여줌
+helm show values . # valyes.yaml 조회
+helm show charts . # Charts.yaml 조회
+helm show readme .
+helm show all .
+
+# 템플릿 조회 (실제 배포 전에 생각한 대로 배포되는 지 확인)
+helm template mychart .
+
+# 차트 배포
+helm install mychart .
+
+# 파일 수정 후 재배포
+helm upgrade mychart .
+
+# 릴리즈 조회
+helm get manifest mychart
+helm status mychart
+helm get notes mychart
+helm get values mychart  # install 명령 때 사용된 values.yaml
+```
+
+#### 내장 객체
+- templates 내 yaml 파일을 확인해보면 values.yaml, Chart.yaml을 가져올 값을 확인 가능
+    - `{{ .Values.replicaCount }}` `{{ .Chart.Name }}`
+- 차트 배포 시에 `Release` 변수 값을 지정할 수 있음
+
+#### 변수 주입
+- values.yaml 기본으로 가져옴
+- 다른 values_xxx.yaml 로 차트를 배포하면 `helm install mychart . -f values_xxx.yaml` values.yaml에 values_xxx.yaml 값이 오버라이딩 되어 사용됨 
+- `-set env=test` 과 함께 배포한다면 가장 우선순위가 됨
+
+```yaml
+# values.yaml
+env: dev
+log: debug
+
+# values_prod.yaml
+env: prod
+
+data:
+    env: {{ .Values.env }}  # prod 
+    log: {{ .Values.log }}  # debug
+```
+
+#### 사용자 정의 변수
+- helpers.tpl: 사용자 정의 키워드와 그에 대한 값을 정의
+    ```yaml
+    {{/*
+    Expand the name of the chart.
+    */}}
+    {{- define "mychart.name" -}}
+    {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+    {{- end }}
+
+    {{/*
+    Common labels
+    */}}
+    {{- define "mychart.labels" -}}
+    helm.sh/chart: {{ include "mychart.chart" . }}
+    {{ include "mychart.selectorLabels" . }}
+    {{- if .Chart.AppVersion }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+    {{- end }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- end }}
+    ```
+- service.yaml
+    ```yaml
+    apiVersion: v1
+    kind: Service
+    metadata:
+        # _helpers.tpl에서 정의한 값을 사용
+        # .을 통해서 범위를 지정할 수 있음
+        name: {{ include "mychart.fullname" . }} 
+        labels:
+            {{- include "mychart.labels" . | nindent 4 }}
+    ```
