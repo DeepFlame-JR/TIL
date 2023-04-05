@@ -1,4 +1,4 @@
-3_Scheduling
+CKA_3_Scheduling
 
 # Scheduling
 - Kubernetes에 의해서 생성된 Pod가 어떤 방법으로 Node에 할당되는가

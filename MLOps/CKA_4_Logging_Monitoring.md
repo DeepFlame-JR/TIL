@@ -1,4 +1,4 @@
-4_Logging_Monitoring
+CKA_4_Logging_Monitoring
 
 
 ### K8S 모니터링 

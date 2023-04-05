@@ -1,4 +1,4 @@
-6_Cluster_Maintenance
+CKA_6_Cluster_Maintenance
 
 # Cluster Maintenance
 
