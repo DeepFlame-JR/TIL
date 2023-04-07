@@ -17,7 +17,6 @@ _26 TILs and counting..._
 
 - [AWS](#AWS)
 - [BigData](#BigData)
-- [CKA_with_Practice_Tests](#CKA_with_Practice_Tests)
 - [CS](#CS)
 - [Conference](#Conference)
 - [Docker_K8S](#Docker_K8S)
@@ -31,14 +30,6 @@ _26 TILs and counting..._
 ### [BigData](#BigData)
 - [1_Basic_of_BigData](BigData/1_Basic_of_BigData.md)
 - [2_Technical_BigData](BigData/2_Technical_BigData.md)
-
-### [CKA_with_Practice_Tests](#CKA_with_Practice_Tests)
-- [2_Core_Concept](CKA_with_Practice_Tests/2_Core_Concept.md)
-- [3_Scheduling](CKA_with_Practice_Tests/3_Scheduling.md)
-- [4_Logging_Monitoring](CKA_with_Practice_Tests/4_Logging_Monitoring.md)
-- [5_Application_Lifecycle_Management](CKA_with_Practice_Tests/5_Application_Lifecycle_Management.md)
-- [6_Cluster_Maintenance](CKA_with_Practice_Tests/6_Cluster_Maintenance.md)
-- [8_Storage](CKA_with_Practice_Tests/8_Storage.md)
 
 ### [CS](#CS)
 - [1_Design_Pattern_and_Paradigm](CS/1_Design_Pattern_and_Paradigm.md)
@@ -60,6 +51,12 @@ _26 TILs and counting..._
 - [Docker](Docker_K8S/Docker.md)
 
 ### [MLOps](#MLOps)
+- [CKA_2_Core_Concept](MLOps/CKA_2_Core_Concept.md)
+- [CKA_3_Scheduling](MLOps/CKA_3_Scheduling.md)
+- [CKA_4_Logging_Monitoring](MLOps/CKA_4_Logging_Monitoring.md)
+- [CKA_5_Application_Lifecycle_Management](MLOps/CKA_5_Application_Lifecycle_Management.md)
+- [CKA_6_Cluster_Maintenance](MLOps/CKA_6_Cluster_Maintenance.md)
+- [CKA_8_Storage](MLOps/CKA_8_Storage.md)
 - [Helm](MLOps/Helm.md)
 - [머신러닝_엔지니어_실무](MLOps/머신러닝_엔지니어_실무.md)
 
