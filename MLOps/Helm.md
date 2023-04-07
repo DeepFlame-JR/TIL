@@ -127,3 +127,132 @@ data:
         labels:
             {{- include "mychart.labels" . | nindent 4 }}
     ```
+
+### Template 만들기
+- -을 앞에 지정하면 앞에 개행문자+띄어쓰기가 무시됨
+- function & pipeline
+    ```yaml
+    # values.yaml
+    func:
+      enabled: true
+    
+    # _helper.tpl
+    {{- define "mychart.name" -}}
+    mychart
+    {{- end }}
+
+    # {{ function 인자1 인자2 }}
+    {{ quote .Values.func.enabled }}  # "true"
+    "{{ .Values.func.enabled }}"  # "true"
+    {{ include "mychart.name" . }}  # mychart
+
+    # {{ Values | functions }} >> Value 값에 function을 연속적으로 적용한다
+    {{ .Values.func.enabled | quote }}  # "true"
+    {{ .Values.func.enabled | upper | quote }}  # "True"
+    ```
+
+- flow controll
+    ```yaml
+    # values.yaml
+    dev:
+        env: dev
+        log: info
+    qa:
+        env: qa
+        log: info
+
+
+    # 조건문
+    # and(&&) or(||) ne(!=) not(!) eq(=) ge(>=) gt(>) le(<=) lt(<) 
+    # 0, "", [], {}, Null >> false
+    {{- if eq .Values.dev.env "dev" }}
+        log: debug
+    {{- else if .Values.dev.env }}
+        log: {{ .Values.dev.log }}
+    {{- else }}
+        log: error
+    {{- end }}
+
+    # With
+    {{- with .Values.dev }}
+        env: {{ .env }}
+    {{- end }}
+
+    # 반복문
+    range:
+        {{- range .Values.list }}  # list = [a, b, c]
+        - {{ . }}
+        {{- end }}
+    # 결과
+    # - a
+    # - b
+    # - c
+    ```
+
+- various function
+    ```yaml
+    # print
+    print:  {{ print "Hard Cording" }}
+    printf: {{ printf "%s-%s" .Values.print.a .Values.print.b }}
+
+    # ternary 변수값이 true면 첫번째, false면 두번째 값이 출력
+    case1: {{ .Values.ternary.case1 | ternary "1" "2" }} 
+    case2: {{ .Values.ternary.case2 | ternary "1" "2" }}
+
+    # indent: 모든 라인에 n 칸을 띄어라 (yaml 형식을 맞추기 위해서)
+    # nindent: 처음에 개행문자를 추가함 (앞에 -이 있는 경우, 엔터, 개행문자 모두 무시)
+      indent: 
+    {{ .Values.data | toYaml | indent 4 }}
+      nindent1: {{ .Values.data | toYaml | nindent 4 }}
+      nindent2:
+      {{- .Values.data | toYaml | nindent 4 }} # 가장 선호됨
+          
+    # default: 값이 없다면 default 값을 줌
+    # Number:0, String: "", List: [], Object: {}, Boolean: false, Null
+    nil:     {{ .Values.default.nil     | default "default" }}
+    list:    {{ .Values.default.list    | default (list "default1" "default2") | toYaml | nindent 6}}
+    object:  {{ .Values.default.object  | default "default:1" | toYaml | nindent 6 }}
+    number:  {{ .Values.default.number  | default 1 }}
+    string:  {{ .Values.default.string  | default "default" }}
+    boolean: {{ .Values.default.boolean | default true }}
+
+    # trim: 값에 공백이 있다면 공백을 제거 (아래 결과 모두 hello)
+    trim:       {{ trim "  hello " }}
+    trimPrefix: {{ trimPrefix "-" "-hello" }}
+    trimSuffix: {{ trimSuffix "-" "hello-" }}
+
+    # random (몇 개를 추출할 것인가)
+    randAlphaNum: {{ randAlphaNum 5 }}   # 0-9a-zA-Z
+    randAlpha:    {{ randAlpha 5 }}      # a-zA-Z
+    randNumeric:  {{ randNumeric 5 }}    # 0-9
+    randAscii:    {{ randAscii 5 }}      # ASCII characters
+
+    trunc:    {{ trunc 5 "hello world" }}
+    replace:  {{ "hello world" | replace " " "-" }}
+    contains: {{ contains "cat" "catch" }}
+    b64enc:   {{ b64enc "hello" }}
+    ```
+
+- 지역변수 활용
+    ```yaml
+    dev:
+        {{- $relname := .Release.Name -}}  # 변수 선언
+        {{- with .Values.dev }}
+        env: {{ .env }}
+        release: {{ $relname }}  # 변수 사용
+        log: {{ .log }}
+        {{- end }}
+
+    data:
+        # for (int i ; i=list.length ; i++) { printf "i : list[i]" };
+        index:
+        {{- range $index, $value := .Values.data }}
+        {{ $index }}: {{ $value }}
+        {{- end }}
+
+        # for (Map<key, value> map : list) { printf "map.key() : map.value()" };
+        key-value:
+        {{- range $key, $value := .Values.dev }}
+        {{ $key }}: {{ $value | quote }}
+        {{- end }}
+    ```
