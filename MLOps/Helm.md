@@ -16,7 +16,7 @@ Helm
 - Helm을 지원하는 Opensource들이 많음
     - 사용자 환경에 따라서 옵션 값을 변경하여 활용할 수 있음
 
-#### Getting started
+### Getting started
 ```bash
 # repository
 helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -95,7 +95,7 @@ data:
 ```
 
 #### 사용자 정의 변수
-- helpers.tpl: 사용자 정의 키워드와 그에 대한 값을 정의
+- helpers.tpl: 사용자 정의 키워드와 그에 대한 값을 정의 (다른 templates 내 yaml 파일에서 사용함)
     ```yaml
     {{/*
     Expand the name of the chart.
@@ -255,4 +255,52 @@ data:
         {{- range $key, $value := .Values.dev }}
         {{ $key }}: {{ $value | quote }}
         {{- end }}
+    ```
+
+## 오픈소스 까보기
+### tomcat
+- Chart.yaml, Values.yaml 값을 가지고 temapltes 내 값을 채워 원하는 Script를 작성
+- 새로운 함수
+    - dict
+    ```yaml
+    {{- $myDict := dict "key1" "value1"}}
+      dict: {{ get $myDict "key" }} # value1
+    ```
+    
+    - include: tpl 내 변수의 하위 내용을 모두 가져옴, yaml 파일에서는 toYaml 함수
+    ```yaml
+    # _helper.tpl (dict의 key1의 값을 사용한다)
+    {{- define "mychart.include" -}}
+    key: {{ .key1 }}
+    dict: {{ get . "key1" }}
+    {{- end}}
+    
+    # templates.yaml (dict를 정의 {"key1":"value1"} 후 _helper.tpl에 있는 내용 가져옴)
+    include1: {{- include "mychart.include" (dict "key1" "value1") | indent 4 }}
+
+    # key: value1
+    # dict: value1
+    ```
+
+    - typeIs: 변수의 타입을 확인
+    ```yaml
+    {{- if typeIs "string" .Values.typeIs1 }}
+    typeIs1: {{ .Values.typeIs1 }}  # "text"
+    ```
+
+    - tpl: value.yaml에서 변수로 사용한 값을 가져옴
+    ```yaml
+    # values.yaml
+    defaultLevel: info
+    dev: 
+        env: dev
+        log: "{{ Values.defaultLevel }}"
+
+    # templates.yaml
+    tpl: "{{ tpl .Values.dev.log . }}"
+    ```
+
+    - coalesce: NULL 값이 아닌 값을 찾음
+    ```yaml
+    coalesce1: {{ coalesce .Values.data1 .Values.data2 "text1" }}
     ```
