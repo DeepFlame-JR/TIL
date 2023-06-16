@@ -1,4 +1,4 @@
-CKA_2_Core_Concept
+CKA_1_Core_Concept
 
 # 1. Introduce
 
@@ -177,21 +177,27 @@ CKA_2_Core_Concept
 1. 파드 상태 갱신: Kubelet은 파드의 상태를 주기적으로 감지하고, API 서버에 상태 업데이트를 보고합니다. 파드의 상태는 "Pending"에서 "Running" 또는 "Failed"로 변경될 수 있습니다.
 1. 서비스 포트 포워딩: 만약 파드가 외부로 노출되어야 하는 서비스 포트를 정의했다면, Kube-proxy 컴포넌트는 해당 포트를 감시하고 요청을 파드로 포워딩합니다.
 
+#### 컨테이너 런타임
+- 컨테이너 실행, 자원 관리 (CPU, 메모리, 디스크, 네트워크 등의 자원을 컨테이너에 할당), 네트워킹 (컨테이너에 IP주소를 할당), 저장소 관리
+- Docker vs Containerd
+    - Docker는 build, run, image관리 등에서 좀 더 편의성이 잘 제공되어있고, CI환경이나 kubernetes환경이 아닌 곳에서 더 편리하게 사용 가능
+    - Containerd는 중간에 layer가 적어 가벼움. 제한된 리소스를 써야하는 환경이라면 좀 더 좋을 것이지만, 개발 편의성이 떨어진다.
+
 
 <img src="https://user-images.githubusercontent.com/40620421/244922843-9f6818fb-b324-4a47-b44a-d425ba7a9b49.png" width="600">
 
 
-## 실습
+# Kubernetes Resources
 
 ### 명령어
 `kubectl [COMMAND] [TYPE] [NAME] [FLAGS] `
 1. COMMAND: create, get, describe 와 같은 operation 종류
-    - get: 리소스 리스트를 출력할 때 사용
-    - describe: 리소스와 name에 해당하는 자세한 정보 출력(IP, 작업내용 등)
-    - edit : Pod, Service, PVC 등 resource에 설정을 변경할 때 사용
-    - create: resource를 생성할 때 사용
-    - apply: resource를 적용할 때 사용
-    - delete: resource를 제거할 때 사용
+    - get: resource 리스트 출력
+    - describe: resource와 name에 해당하는 자세한 정보 출력(IP, 작업내용 등)
+    - edit : resource에 설정을 변경
+    - create: resource를 생성
+    - apply: resource를 적용
+    - delete: resource를 제거
     - top: node의 cpu, memory 사용량 확인
 1. TYPE : pods, nodes 등의 타입
     - pods, nodes, services(svc), storageclass(sc), pvc(영구볼륨클레임), pv(영구볼륨)
@@ -218,18 +224,16 @@ kubectl apply -f redis-production.yaml
 kubectl replace --force -f kubectl-edit-1764306979.yaml
 ```
 
-### POD
-- 컨테이너를 하나 이상 모아놓은 것. 쿠버네티스 애플리케이션의 최소 단위
-    - 쿠버네티스는 워커노드에 컨테이너를 직접 배포하지 않음 → Pod로 캡슐화하여 배포
+## Controller
+- 클러스터의 상태를 지속적으로 모니터링, 원하는 상태를 유지하기 위해 여러 가지 컨트롤러를 kube-api 서버를 통해서 수행
+- Pod의 생명주기를 관리하고, 복제, 롤아웃, 롤백, 스케일링 등의 작업을 수행하며 애클리케이션을 관리
+
+
+### Pod
+- 하나 이상의 컨테이너를 포함하는 단일 응용 프로그램 실행 환경
+    - 쿠버네티스 애플리케이션의 최소 단위
+    - 동일한 노드에서 실행되며 네트워크, 저장소 등의 리소스를 공유
 - 오토 스케일링 시, Pod를 증가시킴으로써 인스턴스를 증가시킴 (포드에 인스턴스를 추가하지 않음)
-- 만약 인스턴스끼리 도움이 필요한 경우에는 동일한 포드로 묶일 수 있음
-    - 로컬로 네트워크와 볼륨을 공유할 수 있음
-    - 함께 생성되거나, 제거됨
-- Pod 생성
-    ```powershell
-    kubectl run nginx --image nginx  # Pod 생성
-    kubectl get pods  # Pod 확인
-    ```  
 - yaml파일로 구성하기
     ```yaml
     # pod-definition.yml
@@ -255,36 +259,40 @@ kubectl replace --force -f kubectl-edit-1764306979.yaml
     ```
 
 ### Replication Controller
-- 클러스터의 여러 노드에 걸쳐있음
-    - 여러 Pod 간에 균형을 맞추는 것에 도움
-- 이유
-    - 기존 Pod가 실패했을 때, 새 Pod를 자동으로 불러옴
-    - 지정된 수의 Pod가 실행 중인지 보장
-    - 여러 Pod를 만들어 로드를 공유
-    - 이용자가 늘어난다면 부하의 균형을 맞추기 위해 추가 Pod를 배포
+- 사용자가 지정한 복제 수에 따라 Pod의 복제본을 생성 및 관리 > `고가용성 보장`
+    - 클러스터에는 여러 노드가 있음 > 한 노드에서 장애가 발생해도 다른 노드를 활용해서 애플리케이션이 실행됨을 보장할 수 있음
+- 복제본의 상태를 지속적으로 모니터링하고, 실패한 복제본을 자동으로 감지하고 복구
 
 ```yaml
 # rc-definition.yaml
 apiVersion: v1
 kind: ReplicationController
 metadata:
-    name: myapp-rc
-    labels:
-        app: myapp
-        type: front-end
+  name: my-replication-controller
 spec:
-    template:
-        # pod-definition.yaml 일부 가져옴
-        metadata:
-            name: myapp-pod
-            labels:
-                app: myapp
-                type: front-end
-        spec:
-            containers: # List
-            - name: nginx-container
-            image: nginx
-        replicas: 3
+  replicas: 3  # 복제본 개수
+  selector:  # 복제할 pod를 선택 (명시하지 않으면 모든 pod가 복제됨)
+    matchLabels:
+        app: my-app
+  template:  # 새로운 pod의 명세서
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+        - name: my-sidecar-container
+          image: sidecar:latest
+          ports:
+            - containerPort: 8080
+    # 복제되지 않으며, ReplicationController가 관리하는 집합과 독립적으로 동작
+    - name: my-special-pod
+      image: special-image:latest
+      ports:
+        - containerPort: 8080
 ``` 
 
 ```powershell
@@ -294,38 +302,39 @@ kubectl get pods
 ```
 
 ### ReplicaSet
-- 새로운 복제 권장 방식
-    - Replication Controller와 유사하지만, 다름
-- 아래에 있는 Pod 정의 및 컨트롤 가능
-    - 기존 Pod를 모니터링하는 데에 활용 가능
-    - Pod 정의했을 때, meta data를 활용해서 탐색한 것 처럼 selector로 탐색 가능
-    - matchLabels의 경우, template 내 labels 값 중 하나의 값을 가져야함
+- 새로운 복제 권장 방식 (Replication Controller와 유사)
+- ReplicationController와 차이
+    - 기존에는 `equality-based` 셀렉터였지만, 더 강력한 기능인 `set-based` 셀렉터 제공
+    - 최근 Kubernetes 버전에서 사용가능함
+    - 부분 복제 지원
+        - ReplicaSet 생성 후에 생성된 Pod에서 `metadata.labels.exclude: "true"` 설정
 
 ```yaml
 # replicaset-definition.yaml
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
-    name: myapp-rs
-    labels:
-        app: myapp
-        type: front-end
+  name: my-replicaset
 spec:
-    template:
-        # pod-definition.yaml 일부 가져옴
-        metadata:
-            name: myapp-pod
-            labels:
-                app: myapp
-                type: front-end
-        spec:
-            containers: # List
-            - name: nginx-container
-            image: nginx
-        replicas: 3
-selector:
+  replicas: 3
+  selector:
     matchLabels:
-        type: front-end
+        environment:
+            matchExpressions:
+            - {key: tier, operator: Exists}  # key에 tier가 존재하는지 확인
+            - {key: app, operator: In, values: [my-app, web]}
+            - {key: age, operator: NotIn, values: [18, 19]}
+            - {key: version, operator: Regexp, values: [0-9]+.[0-9]+.[0-9]+}
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80
 ``` 
 
 ```powershell
@@ -347,6 +356,9 @@ kubectl edit replicaset rs-name
     1. `kubectl scale--replicas = 6 replicaset myapp - replicaset`
 
 ### Deployment
+- 애플리케이션 배포 및 업데이트 관리하는 Resource
+    -
+
 - 새롭게 개발된 버전을 배포하는 방법이 필요
     - 변경사항을 반영 후, 한꺼번에 POD를 껐다가 켤 수도 있음
 - 롤링 업데이트
