@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_26 TILs and counting..._
+_27 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
-- [2023_모두의연구소_글로벌_MLOps트렌드](Conference/2023_모두의연구소_글로벌_MLOps트렌드.md) - Tue Mar 21 20:49:01 2023 +0900
-- [머신러닝_엔지니어_실무](MLOps/머신러닝_엔지니어_실무.md) - Thu Jan 12 22:01:35 2023 +0900
+- [CKA_2_Kubernetes_Resources](MLOps/CKA_2_Kubernetes_Resources.md) - Fri Jun 16 21:58:41 2023 +0900
+- [CKA_1_Core_Concept](MLOps/CKA_1_Core_Concept.md) - Fri Jun 16 21:58:41 2023 +0900
 
 ### Categories
 
@@ -51,7 +51,8 @@ _26 TILs and counting..._
 - [Docker](Docker_K8S/Docker.md)
 
 ### [MLOps](#MLOps)
-- [CKA_2_Core_Concept](MLOps/CKA_2_Core_Concept.md)
+- [CKA_1_Core_Concept](MLOps/CKA_1_Core_Concept.md)
+- [CKA_2_Kubernetes_Resources](MLOps/CKA_2_Kubernetes_Resources.md)
 - [CKA_3_Scheduling](MLOps/CKA_3_Scheduling.md)
 - [CKA_4_Logging_Monitoring](MLOps/CKA_4_Logging_Monitoring.md)
 - [CKA_5_Application_Lifecycle_Management](MLOps/CKA_5_Application_Lifecycle_Management.md)
