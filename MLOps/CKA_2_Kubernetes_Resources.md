@@ -224,11 +224,35 @@ kubectl get all
 1. 상태 확인: 파드의 준비 상태 및 정상 동작 여부를 확인하여 롤링 업데이트 중에 문제가 발생한 경우 자동으로 롤백
 1. 롤백 및 완료: 만약 업데이트 중에 문제가 발생하거나 사용자가 업데이트를 롤백하고자 할 경우, Deployment는 이전 버전의 ReplicaSet으로 롤백하여 이전 상태로 복원있음. 업데이트가 정상적으로 완료되면 이전 버전의 ReplicaSet은 제거되고, 새로운 ReplicaSet이 애플리케이션의 현재 상태를 유지
 
+### DemonSet
+- 모든 노드 또는 특정한 노드에 하나의 파드(Pod)의 복사본이 실행
+  - 주로 로그 수집, 모니터링, 네트워킹과 같은 클러스터 전체적인 작업에 사용
+  - 노드가 클러스터에 추가되거나 제거될 때 자동으로 추가 또는 제거됨
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: my-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-container
+        image: nginx
+```
+
 
 ## Service
 - Pod의 네트워크 접근성을 제공하는 resource (안정성과 가용성을 향상)
-    - 클러스터 외부로부터 요청을 받을 수 있도록 IP를 노출하는 역할
-    - 기본적으로 클러스터 외부에서는 Pod에 접근할 수 없음
+  - 클러스터 외부로부터 요청을 받을 수 있도록 IP를 노출하는 역할
+  - 기본적으로 클러스터 외부에서는 Pod에 접근할 수 없음
+  - 동일한 레이블 셀렉터를 가진 Pod들의 그룹을 캡슐화하여 추상화 (단일 지점으로 많은 Pod를 동작시킬 수 있음)
 - 주요 기능
     - 고정된 IP 주소
         - Service는 고유한 클러스터 내부 IP 주소를 가짐 (DNS 시스템 / etcd를 통해서 도메인 관리)
@@ -248,6 +272,8 @@ kubectl get all
 - Service가 관리하는 Pod들에게 로드밸런싱
 
 ```yaml
+# (외부) --10.0.171.239:80--> (서비스) --8080--> (Pod)
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -259,7 +285,7 @@ spec:
   - name: nginx
     image: nginx:stable
     ports:
-      - containerPort: 80
+      - containerPort: 8080
         name: http-web-svc
 
 ---
@@ -276,7 +302,6 @@ spec:
     # 기본적으로 그리고 편의상 `targetPort` 는 `port` 필드와 동일한 값으로 설정된다.
     port: 80  # 외부에서 Service에 접근할 때 사용되는 포트 번호
     targetPort: http-web-svc  # 선택한 Pod와 Service가 연결되는 포트 번호
-  clusterIP: 10.0.171.239  # Cluster IP를 직접 선택
 ```
 
 ### NodePort
@@ -344,38 +369,24 @@ spec:
 
 
 ### Namespace
-- Cluster, Deployments, Pods 등 모든 요소들을 포함하는 독립적인 공간
-    - 처음 생성될 때 Pod, Service를 생성
-    - 각 Namespace에 고유한 정책 집합이 있을 수 있음
-    - 기업 또는 운영 목적일 때, 고려할 수 있음
-- 다른 Namespace를 참조하기 위해서는 `servicename.namespace.svc.cluster.local` 형식을 따름
-    - 예 `mysql.connect("db-service.dev.svc.cluster.local")`
-- 명령어 뒤에 `--namespace={namespaceName}` `-n={namespaceName}` 을 붙여 다른 namespace를 컨트롤할 수 있음
-    - `kubectl get pods --namespace=dev`
-    - `kubectl create -f pod-definition.yml --namespace=dev`
-    - 또는 yml 파일의 metadata에 포함
-        ```yaml
-        metadata:
-            name: myapp-pod
-            namespace: dev
-        ```
-    - 전체보기 `kubectl get pods --all-namespaces`
-- 기본적으로 default로 설정됨
-    - 전환 `kubectl config set-context $(kubectl config current-context) -n=dev`
+- 클러스터 내 리소스를 그룹화하는 가상의 공간
+  - 예를 들어, 개발, 스테이징, 프로덕션 환경을 위한 네임스페이스를 만듬
+  - 각 리소스가 충돌하는 것을 방지
+  - 액세스 제어 가능
+  - 네트워크 분리
 - ResourceQuota: 다수 노드에서 namespace가 리소스를 일정한 할당량만 사용하도록 설정
     ```yaml
     apiVersion: v1
     kind: ResourceQuota
     metadata:
-        name: compute-quota
-        namespace: dev
+      name: example-quota
     spec:
-        hard:
-            pods: "10"
-            requests.cpu: "4"
-            requests.memory: 5Gi
-            limits.cpu: "10"
-            limits.memory: 10Gi
+      hard:
+        pods: "5"                # 최대 허용할 Pod 개수
+        requests.cpu: "1"        # CPU 요청량 제한
+        requests.memory: 1Gi     # 메모리 요청량 제한
+        limits.cpu: "2"          # CPU 제한
+        limits.memory: 2Gi       # 메모리 제한
     ```
 
 ### Imperative, Declarative

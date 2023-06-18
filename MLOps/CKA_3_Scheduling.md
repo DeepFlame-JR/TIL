@@ -1,128 +1,99 @@
 CKA_3_Scheduling
 
 # Scheduling
-- Kubernetes에 의해서 생성된 Pod가 어떤 방법으로 Node에 할당되는가
-- 원하는 노드에 할당되도록 할 수 있는가?
-- 기본 스케줄러 또는 확장 스케줄러를 활용할 수 있음
+- 노드에 Pod를 할당하는 프로세스
+- 실행
+    1. 노드 선택: 조건에 따라 노드를 필터링, 특정 노드에 이미 Pod가 많으면 노드를 제외할 수 도 있음
+    1. 리소스 할당: 각 노드의 가용한 리소스와 Pod의 요구 사항을 비교
+    1. 노드 평가: 스케줄러는 후보 노드를 평가하여 얼마나 적합한지를 결정
+    1. 우선순위 설정: 각 후보 노드에 대해 우선순위를 설정하여 가장 적합한 노드를 선택. (우선순위는 리소스 사용률, Pod 간의 접근성, Pod 간의 약정, 노드의 가용성 등을 고려)
+    1. 할당 및 배치: 가장 높은 우선순위를 가진 후보 노드에서 실행될 수 있도록 스케줄러가 배치.
 
-```powershell
-k get nodes 
-ssh [ip-address] >> 해당 노드로 이동할 수 있음
+
+## Manual Schedule
+- 사용자가 직접 특정 노드에 할당할 수 있음
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  nodeName: my-node
+  containers:
+  - name: my-container
+    image: nginx
 ```
-
-### Manual Schedule
-- 스케줄러는 생성된 Pod를 사용가능한 Worker Node에 할당	
-    - 스케줄러가 제대로 동작하지 않는다면 Node가 할당되지 않음
-- yaml 파일에서는 NodeName 값을 설정하지 않으면 Binding 객체를 만들어 할당한다	
-    - 만약 NodeName을 지정하면 해당 노드에 할당됨 `spec > nodeName`
-    - Binding 객체  {바인딩 yaml 파일 붙이기}
-
-### Label & Selector
-- Label	
-    - 항목에 대한 속성 (key:value)	
-    - 유형별로 개체를 그룹화할 수 있음 (app, function 등)	
-    - `metadata > labels`에 추가
-- Selector	
-    - Label을 통해서 원하는 리소스를 선택		
-    - `kubectl get pods --selector app=App1,env=dev`	
-    - Replicaset의 경우 `matchLabels`과 `labels` 값을 일치시켜 Reaplicaset과 Pod를 연결
-        ```yaml
-        apiVersion: apps/v1
-        kind: ReplicaSet
-        metadata:
-            name: webapp-1
-            labels:
-                app: App1
-                function: Front-end
-        spec:
-            replicas: 3
-            selector:
-                matchLabels:
-                    app: App1
-            template:
-                metadata:
-                    labels:
-                        app: App1
-                        function: Front-end
-                spec:
-                    containers:
-                        - name: simple-webapp
-                          image: simple-webapp
-        ```
-- annotation
-    - 기타 세부 사항을 기록 (이름, 버전, 빌드 정보 등)
-
-## Node & Pod
-Node에 Pod가 어떻게 스케줄링되는지 알아보자
 
 ### Taints & Tolerations
 - Node에 Pod를 배치하는 전략
     - 어떤 Pod가 어떤 Node에 배치되는지, 제한 되는지에 관함
 - `Taint`
     - Node에 설정함으로 원치않는 Pod가 할당되는 것을 방지
-    - `kubectl taint nodes {node-name} {key}={value}:{taint-effect}`   
-        `kubectl taint nodes node1 app=blue:NoSchedule`
-        - NoSchedule: key-value에 맞지 않는 Pod를 스케줄하지 않음
-        - preferNoSchedule: 스케줄을 하지 않는 것이 선호되지만, 보장하지 않음
-        - NoExecute: 새 포드가 노드에 생성되지 않음, 만약 기존에 있다면 제거됨
-    - Master Node의 경우, Pod를 예약하지 않도록 Taints가 설정되어 있음
+        - Master Node의 경우, Pod를 예약하지 않도록 Taints가 설정되어 있음
+        - 노드 보호: 특정 노드에 다른 Pod가 스케줄링되지 않도록 할 수 있음 > 안정적인 노드 유지  
+        (GPU Node에는 GPU가 있는 Pod만 올라갈 수 있도록 함)
+        - Pod 제한: 특정 Pod가 특정 노드에만 실행할 수 있도록 제한할 수 있음
+    
+    - `kubectl taint nodes node-1 key=value:effect`
+        - node-1에서 key=value인 Pod만 할당 가능
+        - effect
+            - NoSchedule: key-value에 맞지 않는 Pod를 스케줄하지 않음
+            - preferNoSchedule: 스케줄을 하지 않는 것이 선호되지만, 보장하지 않음
+            - NoExecute: 새 포드가 노드에 생성되지 않음, 만약 기존에 있다면 제거됨
 - `Toleration`
-    - Pod에 설정함으로써 Taint를 용인할 수 있는 Toleration 설정
+    - Pod에 설정함으로써 Taints를 우회하고, 특정 노드에 Pod를 스케줄링할 수 있음
     - Toleration이 설정되었다고 해당 Taint가 있는 노드에 반드시 할당되는 것은 아님
     ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+        name: my-pod
     spec:
         containers:
-        - name: nginx-container
-          image: nginx
+        - name: my-container
+            image: nginx
         tolerations:
-        - key: "app"
-          operator: "Equal"
-          value: "blue"
+        - key: "key"
+          operator: "Equal" # Equal, Exists 등
+          value: "value"
           effect: "NoSchedule"
     ```
 
-### Node Selector
+### NodeSelector
 - 특정 Pod가 특정 Node에서만 실행될 수 있도록 쉽게 설정
-    - 예) 리소스를 많이 점유하는 Pod를 리소스가 많은 Node에서 실행하도록 한다
+    - 리소스를 많이 점유하는 Pod를 리소스가 많은 Node에서 실행하도록 함
 - 설정
-    - node에 label 설정 `kubectl label nodes node-1 size=Lareg`
+    - node에 label 설정 `kubectl label nodes node-1 size=Large`
     ```yaml
     spec:
         nodeSelector:
             size: Large
     ```
 
-### Node Affinity
+### Affinity
+- Pod가 특정 노드와의 관계를 설정하는 방법
+- 종류
+    1. Node Affinity: Pod가 특정 노드에 스케줄링되거나 특정 노드에 대한 제약 조건을 설정
+    1. Pod Affinity: Pod가 다른 Pod와 함께 배치되도록 할 수 있으며, 특정 Pod와 동일한 노드에 스케줄링될 수 있도록 지정
+
+#### Node Affinity
 - Pod가 특정 노드에서 호스팅되도록 설정
-    - Node Selector에 비해 고급 기능 지원
-    - Node Selector에 비해 복잡
+    - Node Selector에 비해 고급 기능 지원 / 복잡
     ```yaml
-    spec: 
-        affinity:
-            nodeAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                    nodeSelectorTerms:
-                    - matchExpressions:
-                        # Size 값이 Large 또는 Medium인 Node에 할당
-                        - key: size
-                          operator: In
-                          values:
-                          - Large
-                          - Medium
-    ```
-- Operator: key값과 value값에 대한 관계 정의
-    ```yaml
-    - key: size
-      operator: NotIn # size 값이 Small이 아님
-      value:
-        - Small
-    
-    - key: size
-      operator: Exists # size 값이 존재한다
+    spec.affinity.nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+                # Size 값이 Large 또는 Medium인 Node에 할당
+                - key: size
+                    operator: In  # NotIn, Exists 등
+                    values:
+                    - Large
+                    - Medium
     ```
 - Node Affinity Types: Pod의 타입 수명 주기 단계를 설정
-    - DuringScheduling: Pod가 존재하지 않는 상태
-    - DuringExecution: Pod가 생성된 상태
+    - DuringScheduling: 스케줄링 중에 Pod에 영향을 줄 것인가
+    - DuringExecution: 실행 중에 Pod에 영향을 줄 것인가
     - Available
         - `requiredDuringSchedulingIgnoredDuringExecution`
             - 원하는 노드가 없다면 스케줄링이 되지 않음
@@ -135,13 +106,15 @@ Node에 Pod가 어떻게 스케줄링되는지 알아보자
             - 원하는 노드가 없다면 스케줄링이 되지 않음
             - 실행 중 노드가 변경되면 Pod를 제거
 
-#### Taints & Tolerations // Node Affinity
+#### Taints & Tolerations & NodeAffinity
+원하는 Pod를 Node에 할당시키고 싶다!
 1. Taints & Tolerations만 설정?
-    - 아무것도 설정되지 않은 Pod가 노드에 할당되지 못 함
-    - Toleration가 설정된 Pod가 아무것도 설정되지 않은 노드에 할당될 수 있음
+    - Node 입장에서 받고 싶은 Pod를 정의
+    - 일반 Pod > 할당받지 못 함
+    - Torleration > 다른 Node에 할당될 수도 있음
 1. Node Affinity만 설정?
-    - 설정된 노드와 Pod가 잘 매핑됨
-    - 아무것도 설정되지 않은 Pod가 해당 노드에 할당될 수 있음
+    - Pod 입장에서 할당 되고 싶은 Node를 정의
+    - 일반 Pod가 Node에 할당될 수도 있음
 1. 모두 설정!
     - 원하는 노드에 원하는 Pod가 할당될 수 있는 최적의 방법
 
