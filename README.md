@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_27 TILs and counting..._
+_25 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [CKA_4_Operation_in_Kubernetes](MLOps/CKA_4_Operation_in_Kubernetes.md) - Mon Jun 19 19:43:25 2023 +0900
 - [CKA_2_Kubernetes_Resources](MLOps/CKA_2_Kubernetes_Resources.md) - Fri Jun 16 21:58:41 2023 +0900
-- [CKA_1_Core_Concept](MLOps/CKA_1_Core_Concept.md) - Fri Jun 16 21:58:41 2023 +0900
 
 ### Categories
 
@@ -54,9 +54,7 @@ _27 TILs and counting..._
 - [CKA_1_Core_Concept](MLOps/CKA_1_Core_Concept.md)
 - [CKA_2_Kubernetes_Resources](MLOps/CKA_2_Kubernetes_Resources.md)
 - [CKA_3_Scheduling](MLOps/CKA_3_Scheduling.md)
-- [CKA_4_Logging_Monitoring](MLOps/CKA_4_Logging_Monitoring.md)
-- [CKA_5_Application_Lifecycle_Management](MLOps/CKA_5_Application_Lifecycle_Management.md)
-- [CKA_6_Cluster_Maintenance](MLOps/CKA_6_Cluster_Maintenance.md)
+- [CKA_4_Operation_in_Kubernetes](MLOps/CKA_4_Operation_in_Kubernetes.md)
 - [CKA_8_Storage](MLOps/CKA_8_Storage.md)
 - [Helm](MLOps/Helm.md)
 - [머신러닝_엔지니어_실무](MLOps/머신러닝_엔지니어_실무.md)
