@@ -61,8 +61,6 @@ kubectl replace --force -f kubectl-edit-1764306979.yaml
         containers: # List
         - name: nginx-container
           image: nginx
-        - name: busybox
-          image: busybox
     ```
 
     ```powershell
@@ -70,6 +68,27 @@ kubectl replace --force -f kubectl-edit-1764306979.yaml
     kubectl get pods
     kubectl describe pod myapp-pod
     ```
+
+#### multi-container-pod
+- 함께 필요한 서비스를 묶음
+  - Micro Service 단위로 생각했을 때의 서비스 
+  - 같은 네트워크, 볼륨 등을 공유함
+- spec > containers 내에 많은 컨테이너를 선언함으로써 구현 가능
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: multi-container-pod
+spec:
+  containers:
+  - name: main-container
+    image: nginx
+    ports:
+    - containerPort: 80
+  - name: sidecar-container # side container가 main-container를 보조함
+    image: busybox
+    command: ["sleep", "3600"]
+```
 
 ### Replication Controller
 - 사용자가 지정한 복제 수에 따라 Pod의 복제본을 생성 및 관리 > `고가용성 보장`
@@ -223,29 +242,6 @@ kubectl get all
 1. 파드 점진적 배포: 새로운 ReplicaSet이 생성된 후, Kubernetes는 점진적으로 새로운 파드를 생성하고 기존 ReplicaSet의 파드를 제거.이를 통해 애플리케이션의 가용성을 유지
 1. 상태 확인: 파드의 준비 상태 및 정상 동작 여부를 확인하여 롤링 업데이트 중에 문제가 발생한 경우 자동으로 롤백
 1. 롤백 및 완료: 만약 업데이트 중에 문제가 발생하거나 사용자가 업데이트를 롤백하고자 할 경우, Deployment는 이전 버전의 ReplicaSet으로 롤백하여 이전 상태로 복원있음. 업데이트가 정상적으로 완료되면 이전 버전의 ReplicaSet은 제거되고, 새로운 ReplicaSet이 애플리케이션의 현재 상태를 유지
-
-### DemonSet
-- 모든 노드 또는 특정한 노드에 하나의 파드(Pod)의 복사본이 실행
-  - 주로 로그 수집, 모니터링, 네트워킹과 같은 클러스터 전체적인 작업에 사용
-  - 노드가 클러스터에 추가되거나 제거될 때 자동으로 추가 또는 제거됨
-```yaml
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: my-daemonset
-spec:
-  selector:
-    matchLabels:
-      app: my-app
-  template:
-    metadata:
-      labels:
-        app: my-app
-    spec:
-      containers:
-      - name: my-container
-        image: nginx
-```
 
 
 ## Service

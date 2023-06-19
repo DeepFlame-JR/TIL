@@ -118,7 +118,8 @@ spec:
 1. 모두 설정!
     - 원하는 노드에 원하는 Pod가 할당될 수 있는 최적의 방법
 
-### 리소스 제한
+
+## 리소스 제한
 - 노드가 CPU, MEM, DISK 등을 관리한다 (requests, limits)
     - 기본적으로 0.5 CPU / 256Mi MEM
     - CPU 초과 > CPU가 초과하지 않도록 조절
@@ -126,21 +127,27 @@ spec:
 - 만약 제한된 리소스에 초과되는 Pod는 노드에 할당되지 못 함
     - 6CPU 노드에서 5CPU가 할당된 상태에서 2CPU가 요구되는 Pod가 할당되려고 할 때
     - 할당할 노드가 없다면 스케줄링 예약됨 (Pending)
-- 1 CPU, 1Gi MEM
+- 0.5 CPU, 512Mi MEM
     ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+        name: my-pod
     spec:
-        containers:
-        - name: simple-webapp-color
-          image: simple-webapp-color
-          resources:
-            requests:
-                memory: "1Gi"
-                cpu: 1
-            limits:
-                memory: "2Gi"
-                cpu: 2
+    containers:
+    - name: my-container
+    image: nginx
+    resources:
+    limits:
+        cpu: "1"
+        memory: "1Gi"
+    requests:
+        cpu: "0.5"
+        memory: "512Mi"
     ```
-- `LimitRange`: 만약 생성되는 Pod의 기본값을 변경
+
+### LimitRange
+- 생성되는 Pod의 기본값을 변경
     ```yaml
     apiVersion: v1
     kind: LimitRange
@@ -155,55 +162,47 @@ spec:
         type: Container
     ```
 
-### Daemon Sets
-- Pod의 여러 인스턴스를 배포하는 데 도움
-    - 클러스터의 각 노드에서 하나의 Pod만 복사됨
-    - 노드가 생성된다면 복제본이 자동 추가됨
-    - Scheduler와 독립적
-- Monitoring Agent, Logs Viewer, Networking 등에 이용
-- yaml이 ReplicaSets와 유사
-    ```yaml
-    apiVersion: apps/v1
-    kind: DaemonSet
+## 스케줄러와 독립적인 Resources
+
+### DemonSet
+- 모든 노드 또는 특정한 노드에 하나의 파드(Pod)의 복사본이 실행
+  - 노드가 클러스터에 추가되거나 제거될 때 자동으로 추가 또는 제거됨
+  - 주로 로그 수집, 모니터링, 네트워킹과 같은 클러스터 전체적인 작업에 사용
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: my-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: my-app
+  template:
     metadata:
-        name: fluentd-elasticsearch
-    namespace: kube-system
-    labels:
-        k8s-app: fluentd-logging
+      labels:
+        app: my-app
     spec:
-        selector:
-            matchLabels:
-            name: fluentd-elasticsearch
-        template:
-            metadata:
-            labels:
-                name: fluentd-elasticsearch
-            spec:
-                containers:
-                - name: fluentd-elasticsearch
-                  image: quay.io/fluentd_elasticsearch/fluentd:v2.5.2
-    ```
+      containers:
+      - name: my-container
+        image: nginx
+```
 
 ### Static Pods
-- kube API 서버 등의 K8S의 요소의 개입없이 노드에서 만들어지는 Pod
-    - 이름에 마지막에는 노드 이름이 있음 (kube-apiserver-`controlplane`)
-    - 특정 노드에서 만들어지기에 Scheduler에서 독립적
-    - Kube API를 통해서 편집 불가능 (읽기 전용)
-- kubelet은 kube API 서버없이 `Pod`를 생성할 수 있음
-    - 모든 워커 노드는 `kubelet` `Docker`을 가짐
-    - 워커 노드의 Directory에 yaml 파일 생성 > kubelet이 주기적으로 확인 후 Pod 생성
+- 특정 노드에 직접 정의된 Pod로, 노드에 의해 직접 실행되는 Pod
+- kubelet이 직접 관리/실행, kube-apiserver와 통신하여 해당 Pod의 상태를 보고
+    - kube api를 통해서 편집 불가능
+    - 노드에 yaml 파일 생성 > kubelet이 주기적으로 확인 후 Pod 생성
         - yaml 파일을 수정하면 Pod를 다시 생성
         - yaml 파일을 삭제하면 Pod를 제거
-    - `docker ps`를 통해서 확인 가능
-- 경로 설정
-    - `kubelet.service`에서 설정 가능
-        1. `--pod-manifest-path=/etc/Kubernetes/manifests`
-        1. `--config=kubeconfig.yaml` > `staticPodPath: /etc/Kubernetes/manifests`
-- 예시
-    - 마스터 노드에서 필요한 Pod들을 미리 설정한다 (독립적임으로 충돌이 없음)
+- 간편한 배포, kubelet에 의한 자동 관리, 네트워크 분리 등의 장점
+- 활용
+    - 클러스터 보안 에이전트: 노드에서 독립적으로 실행되며, 클러스터의 보안 정책을 적용하고 모니터링하는 역할을 수행
+    - 로깅 및 모니터링 에이전트: 노드에서 실행되는 애플리케이션의 로그를 수집하고 메트릭을 수집하여 클러스터의 상태 및 성능을 모니터링
+    - 네트워크 프록시: 노드에서 특정 포트로 들어오는 트래픽을 다른 서비스 또는 애플리케이션으로 전달하거나 로드 밸런싱하는 역할을 수행
+    - 로컬 스토리지 관리자: 노드의 로컬 디스크 또는 SSD 등의 스토리지를 관리하고 볼륨을 프로비저닝
 
 
-### Multiple Scheduler
+## Multiple Scheduler
 - 특정 노드를 원하는 애플리케이션이 존재하는 경우
 - 한 번에 여러 개의 스케줄러를 가질 수 있음
     - defualt-scheduler / my-scheduler / my-scheduler-2 등 ... 

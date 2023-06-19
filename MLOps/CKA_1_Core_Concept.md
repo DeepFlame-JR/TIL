@@ -154,6 +154,21 @@ CKA_1_Core_Concept
     1. 볼륨 마운트: 파드에 정의된 볼륨(Volume)을 마운트하고, 컨테이너에 볼륨을 제공
     1. 보안 및 인증: API 서버와의 통신에 사용되는 인증 정보를 관리하고, 파드의 보안 정책을 적용
 
+#### 로그
+- 애플리케이션 및 시스템의 동작 및 문제점을 식별하기 위함
+    - Pod 단위로 수집됨 / Node, Pod, Service 등에 변경 사항 및 이벤트도 로그로 남김
+    - 로그 수집 에이전트 > 로그 저장소 > 로그 검색 및 분석
+        - 로그 수집 에이전트: Fluentd, Fluent Bit, Logstash
+        - 로그 저장소: Elasticsearch, Splunk, Grafana Loki
+        - 로그 검색 및 분석: Elastic Stack (Elasticsearch, kubana), Grafana Loki
+    - 기본적으로 Pod의 로그 등의 정보는 Node에 보관
+        - 플러그인을 설치로 중앙 집중식 로그 수집 / 데이터 보존 및 백업 / 로그 분석 및 모니터링 이 가능
+- Metrics Server
+    - Kubernetes 리소스 사용량 및 성능 지표를 수집/노출
+        - Resource 들의 CPU/MEM 사용량, 네트워크 트래픽 등의 지표를 수집
+        - Node > kubelet > cAdvisor > Kubelet API > Metrics Sever
+    - GitHub를 통한 설치 필요
+
 ### kube-proxy
 - 파드 간의 네트워크 연결 및 로드 밸런싱을 처리하여 클러스터 내의 서비스의 안정성과 가용성을 유지
     - 기본적으로 모든 노드에서 실행됨
