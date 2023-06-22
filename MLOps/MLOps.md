@@ -1,4 +1,4 @@
-머신러닝_엔지니어_실무
+MLOps
 
 # 1. 머신러닝 파이프라인
 - 파이프라인: 잘 정의된 프로세스 > 일부 프로세스를 자동화하여 시간과 비용을 절감
@@ -9,7 +9,7 @@
 
 #### 전통적인 소프트웨어 엔지니어와 비교
 - 미래의 나를 위해서 지금이 힘들더라도 사전에 준비하는 것
-    - 예) 리팩토링, 종속성 제거, 단위 테스트, API 강화, 문서화 등
+    - 예. 리팩토링, 종속성 제거, 단위 테스트, API 강화, 문서화 등
 - ML 시스템에서는 추상화(Abstraction)의 경계가 무너짐
     - 기존에 알려진 코드 수준의 방식으로 문제 해결이 어려움
     - 하나의 거대한 모델이 있을 때, 비슷하게 모델을 정의할 수가 없음
@@ -52,26 +52,42 @@
 ## MLOps 성숙도 레벨
 
 #### Level 0
-- 수동, 대화식 프로세스
-- ML과 운영의 분리
-- 드문 릴리즈 반복, CI/CD 없음
-- 성능 모니터링 부족
+- 과정
+    - DS: Offline Data > Model 생성 > Model Registry
+    - BE: Model Registry > Model Serving > Prediction Service
+- 특징 
+    - `모델`을 통한 소통
+        - 파이썬 코드, 학습된 가중치, 환경 (패키지, 버전) 중 하나라도 변경된다면 모델이 동작을 제대로 할 수 없음
+    - 수동, 대화식 프로세스
+    - 드문 릴리즈 반복, CI/CD 없음
 
 <img src="https://user-images.githubusercontent.com/40620421/212064605-d64eafca-5efd-4f56-b2cf-c0fd7b62e33d.png" width=700>
 
 #### Level 1
-- 빠른 실험
-- 프로덕션 모델의 CT
-- 실험 운영 환경의 조화
+- 과정
+    - DS: Feature Store > Model 훈련 > 코드 보관 (Source Repository)
+    - BE: Feature Store + Source Repository (Pipeline으로 패키징) > Model 훈련 > Model Registry > Model Serving > Prediction Service
+    - QA: Prediction Service > 모니터링 > 재학습
+- 특징
+    - 실험/운영 환경의 분리
+    - Pipeline(Container)을 활용 > 환경이 달라서 문제될 일을 없앰
+    - ML Metadata Store 추가
+    - Production Model의 Continuous Training(CT)
+        - Auto Retrain: Data Shift(실제 데이터는 계속 해서 변함) > 성능이 저하되는 문제 > 최근 데이터로 재학습
+        - Auto Deploy: A제품에 대한 모델 운영 > B제품으로 변경되어 모델 재생성 > 다시 A제품으로 돌아옴 > A에 대한 모델이 있는 찾은 후에 자동 변경
+        - 효율적인 리소스 관리: 새로운 데이터에 대해서만 모델을 업데이트하여, 학습 시간과 리소스를 절약할 수 있음
 
 <img src="https://user-images.githubusercontent.com/40620421/212064630-089afbcc-53c9-4444-82ba-2c335099c3ea.png" width=700>
 
-1. Feature Store에서 데이터 추출 후, 모델 실험 (Orchestrated experiment)
-1. 실험된 모델을 Pipeline으로 패키징
-1. Pipeline이 배포되어 트리거가 발생하면 Pipeline을 따라 학습 진행 후 배포
-1. 성능 모니터링을 통해서 트리거 발생 또는 모델 실험 진행
 
 #### Level 2
+- 과정
+    - CI: 모델에 영향이 가는 요소를 추가했을 때, 실제로 모델이 정상적으로 학습이 되는지 확인 후 학습 Pipeline으로 생성
+        - 모델에 영향이가는 요소: 훈련 데이터 변경, 코드 수정, 환경 변경(파이썬, 패키지 변경)
+        - Source Repository > Build, test & package pipeline components
+    - CD: 학습된 모델이 정상적으로 동작하는지 확인
+        - Packages > Pipeline deployment
+        - Trained models > Model Serving
 - 자동화된 CI/CD 시스템이 필요
 - 이를 통해 데이터 과학자는 Feature Engineering, 모델 아키텍처 및 하이퍼 파라미터에 대한 새로운 아이디어를 신속하게 탐색 가능
 <img src="https://user-images.githubusercontent.com/40620421/212064661-15618322-65b2-402d-9f4e-0e35f0ed7516.png" width=700>
@@ -84,7 +100,7 @@
 <img src="https://user-images.githubusercontent.com/40620421/212074481-d228ab45-888b-475b-a820-be72c5b47e59.png" width=600>
 
 
-### 데이터 수집/검증
+#### 데이터 수집/검증
 - 모델 학습을 위해 원하는 데이터 형태에 맞는 데이터 수집 진행
     - Data Versioning을 통해서 모델이 어떤 데이터셋을 통해서 훈련했는지 로그를 잘 확인할 수 있음 (S3 등에서는 자동으로 진행)
 - 데이터 검증 진행
@@ -100,7 +116,7 @@
         - 텍스트 문자를 인덱스로 변환하거나 토큰을 워드 벡터로 변환
         - 새로운 Feature 생성
 
-### 모델 학습/분석/버전 관리
+#### 모델 학습/분석/버전 관리
 - 모델 학습 진행
     - 가장 낮은 오차를 사용하여 입력을 수행하고 출력을 예측하는 모델을 학습
     - 메모리는 한정되어 있기 때문에, 효율적인 학습을 시키는 것이 중요
@@ -112,7 +128,7 @@
     - 어떤 데이터셋, 하이퍼 파라미터, 모델을 사용하였는지 관리
     - A/B Test를 위해서도 필요함
 
-### 모델 배포/피드백
+#### 모델 배포/피드백
 - 모델 배포 진행
     - 일회성 구현으로 구성된 모델이라면 모델 업데이트는 쉽지 않음
         - PyTorch는 형상 관리하기가 어려움
@@ -122,6 +138,26 @@
 - 피드백 루프 반복
     - 새로 배포된 모델의 효과와 성능을 측정할 수 있어야 함
     - 데이터 과학자가 새로운 모델 연구에 집중할 수 있도록 함
+
+## Why Kubenetes?
+- 이유
+    - 확장성과 유연성
+        - ML은 대량의 데이터와 복잡한 모델 훈련을 필요로 함 > Kubernetes를 사용하여 클러스터를 구성하고 자원을 동적으로 확장할 수 있음
+        - 분산 시스템을 쉽게 관리하고 확장 가능 > 대규모 기계 학습 작업을 효율적으로 처리
+        - 훈련 중 클러스터에 문제가 생기면 다른 클러스터로 컨테이너를 이동
+    - 배포 관리
+        - Kubernetes는 컨테이너화된 애플리케이션의 배포와 관리를 자동화
+        - 모델 배포를 컨테이너로 추상화하고, Kubernetes 클러스터에 배치함으로써 배포 과정을 단순화하고 일관성을 유지
+        - 롤링 업데이트, 롤백, 서비스 디스커버리 등과 같은 기능을 제공하여 모델의 신뢰성과 안정성을 보장
+    - 자원 관리
+        - 모델 훈련 및 추론 작업에 필요한 CPU, GPU, 메모리 등의 자원을 동적으로 할당하고 관리
+        - 자동 스케일링 기능을 사용하여 트래픽이나 작업 부하에 따라 자원을 자동으로 조정
+    - 모니터링과 로깅
+- If not
+    - 클러스터를 누군가가 사용 중이다가 다운이 되면 클러스터를 사용하던 사람들은 피해를 봄
+    - 클러스터를 누군가가 환경 업데이트를 하면 기존에 모델 훈련 방식이 동작하지 않을 수 있음
+
+
 
 
 # ML 프로젝트 실험 관리
@@ -443,302 +479,3 @@ tfdv.display_anomalies(skew_anomalies)
 - 가장 가까운 특성을 가진 (가까운 Counterfactuals) 레코드를 확인할 수 있음
 
 https://pair-code.github.io/what-if-tool/learn/tutorials/walkthrough/
-
-
-# Kubeflow
-- ML 시스템의 구성 요소를 배열하기 위한 플랫폼
-- ML 프로젝트에서는 ML Code 뿐만 아니라, 다양한 요소가 필요
-    - Serving Infrastructure, Feature Extraction, ...
-    - 이러한 것들 추상화하여 재사용가능 하도록 한다.
-
-<img src="https://www.kubeflow.org/docs/images/kubeflow-overview-platform-diagram.svg" width="600">
-
-#### 핵심 컴포넌트
-- 조합 가능성 (Composability)
-    - Kubeflow의 핵심 컴포넌트들은 이미 친숙한 DS툴로 부터 나옴, ML 학습의 특정 단계를 용이하게 하기 위해 독립적으로 사용될 수 있음
-- 이식성 (Portability)
-    - 컨테이너 기반 설계를 갖추어, 특정 개발 환경에 종속될 필요가 없음
-    - Laptop/Cloud 등에서 실험 및 프로토타입 작업을 수행할 수 있으며, 프로덕션 환경에 쉽게 배포 
-    가능
-- 확장성 (Scalability)
-    - Kubernetes를 사용하여 컨테이너 개수와 크기를 동적으로 확장 가능
-
-#### 워크 플로우
-<img src="https://www.kubeflow.org/docs/images/kubeflow-overview-workflow-diagram-1.svg" width="600">
-
-- 실험 단계 
-    1. 문제 상황 확인, 데이터 분석
-    1. ML 알고리즘 선택, 코드 작성
-    1. 모델을 훈련하며 실험
-    1. 모델의 하이퍼 파라미터 수정
-- 상품 단계
-    1. 데이터 전처리
-    1. 모델 훈련
-    1. 모델을 온라인으로 서빙, 예측값 생성
-    1. 모델 성능 모니터링
-
-### 기본 개념
-1. Central Dashboard
-    - 파이프라인, 실험 내역, 결과 등을 확인
-1. JupyterHub
-    - ML 프로젝트의 펏 시작인 프로토타이핑과 실험을 할 수 있는 Jupyter Notebook 제공
-1. Pipelines Argo
-    - 컨테이너 기반의 job orchestration
-    - 도커 이미지를 기반으로 job을 실행
-1. Pipeline
-    - task들을 나열한 워크플로우
-        - task는 컨테이너 실행이나 결과 파라미터 등을 의미함
-        - DAG 형식으로 task를 구성
-    - KFP 구성 과정
-        1. Python KFP SDK의 DSL(domain-specific language)를 통해서 파이프라인을 생성
-        1. KFP SDK's DSL compiler를 통해서 YAML로 컴파일
-        1. KFP backend로 파이프라인을 실행 > K8S의 pod가 생성되고 파이프라인이 실행됨
-        1. KFP Dashboard를 통해서 진행상황 모니터링
-    - Docker container image > Pipeline component > Pipeline
-1. Katlib
-    - 모델 튜닝(AutoML)을 통한 하이퍼파라미터 최적화
-1. TFJobs
-    - 비동기 학습이나 오프라인 추론
-1. KFServing
-    - 온라인 인퍼런스 서버를 KFServing으로 배포할 수 있음
-1. MinIO
-    - 파이프라인 간의 저장소 기능을 함
-    - 파이프라인 중간에 생기는 부산물을 저장
-
-설치 참고
-- https://deep-flame.tistory.com/43
-- `kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80`
-
-
-### 파이프라인
-- 머신러닝 파이프라인 오케스트레이션 단순화
-- 실험, 재현, 공유
-- 컴포넌트를 빠르게 재사용하고 연결
-- 실행 환경과 코드 런타임 분리
-    - 이식성, 반복가능성, 캡슐화
-- 컴포넌트 간의 상호작용을 정의하여 그래프 구조를 표현
-    - 컴포넌트: 머신러닝 워크플로우의 한 단계
-    - 그래프: 파이프라인의 시각적 표현
-    - 실험: 파이프라인을 다양한 설정으로 돌려볼 수 있음
-- 조건 분기를 사용할 수 있음
-
-#### Hello World
-```python
-import kfp
-
-KUBEFLOW_HOST = "http://127.0.0.1:8080/pipeline"
-
-# 함수 정의
-def hello_world_component():
-    ret = "Hello World!"
-    print(ret)
-    return ret
-
-
-# 함수를 컴포넌트로 변경
-@kfp.dsl.pipeline(name="hello_pipeline", description="Hello World Pipeline!")
-def hello_world_pipeline():
-    hello_world_op = kfp.components.func_to_container_op(hello_world_component)
-    _ = hello_world_op()
-
-
-if __name__ == "__main__":
-    # 컴파일한 후 등록하는 방법
-    kfp.compiler.Compiler().compile(hello_world_pipeline, "hello-world-pipeline.zip")
-    # 바로 등록
-    kfp.Client(host=KUBEFLOW_HOST).create_run_from_pipeline_func(
-        hello_world_pipeline, arguments={}, experiment_name="hello-world-experiment"
-    )
-```
-
-#### Add number pipeline
-```python
-import kfp
-from kfp import components
-from kfp import dsl
-
-EXPERIMENT_NAME = 'Add number pipeline'
-BASE_IMAGE = "python:3.7"
-KUBEFLOW_HOST = "http://127.0.0.1:8080/pipeline"
-
-# 컴포넌트 정보 세팅
-@dsl.python_component(
-    name='add_op',
-    description='adds two numbers',
-    base_image=BASE_IMAGE 
-)
-def add(a: float, b: float) -> float:
-    print(a, '+', b, '=', a + b)
-    return a + b
-
-# 함수를 pipeline operation으로 변경
-add_op = components.func_to_container_op(
-    add,
-    base_image=BASE_IMAGE,
-)
-
-# 파이프라인 정보 세팅
-@dsl.pipeline(
-    name='Calculation pipeline',
-    description='A toy pipeline that performs arithmetic calculations.'
-)
-def calc_pipeline(
-        a: float = 0,
-        b: float = 7
-):
-    add_task = add_op(a, 4) 
-    add_2_task = add_op(a, b)
-    add_3_task = add_op(add_task.output, add_2_task.output)
-
-
-if __name__ == "__main__":
-    arguments = {'a': '7', 'b': '8'}
-    
-    kfp.Client(host=KUBEFLOW_HOST).create_run_from_pipeline_func(
-        calc_pipeline,
-        arguments=arguments,
-        experiment_name=EXPERIMENT_NAME)
-```
-
-#### Parallel
-```python
-import kfp
-from kfp import dsl
-EXPERIMENT_NAME = 'Parallel execution' 
-KUBEFLOW_HOST = "http://127.0.0.1:8080/pipeline"
-
-def gcs_download_op(url):
-    return dsl.ContainerOp(
-        name='GCS - Download',
-        image='google/cloud-sdk:272.0.0',
-        command=['sh', '-c'],
-        arguments=['gsutil cat $0 | tee $1', url, '/tmp/results.txt'],
-        file_outputs={
-            'data': '/tmp/results.txt',
-        }
-    )
-
-
-def echo2_op(text1, text2):
-    return dsl.ContainerOp(
-        name='echo',
-        image='library/bash:4.4.23',
-        command=['sh', '-c'],
-        arguments=['echo "Text 1: $0"; echo "Text 2: $1"', text1, text2]
-    )
-
-
-@dsl.pipeline(
-    name='Parallel pipeline',
-    description='Download two messages in parallel and prints the concatenated result.'
-)
-def download_and_join(
-        url1='gs://ml-pipeline-playground/shakespeare1.txt',
-        url2='gs://ml-pipeline-playground/shakespeare2.txt'
-):
-    download1_task = gcs_download_op(url1)
-    download2_task = gcs_download_op(url2)
-
-    # 두 개의 task가 모두 끝날 때까지 기다린다
-    echo_task = echo2_op(download1_task.output, download2_task.output)
-
-
-if __name__ == '__main__':
-    # kfp.compiler.Compiler().compile(download_and_join, __file__ + '.zip')
-    kfp.Client(host=KUBEFLOW_HOST).create_run_from_pipeline_func(
-        download_and_join,
-        arguments={},
-        experiment_name=EXPERIMENT_NAME)
-```
-<img src="https://user-images.githubusercontent.com/40620421/232314243-b9580d56-7281-45a2-90dd-27648ffe2b94.png" width=600>
-
-
-#### Control 
-- 결과에 따라서 어떻게 움직이는지 제어
-```python
-from typing import NamedTuple
-import kfp
-from kfp import dsl
-from kfp.components import func_to_container_op, InputPath, OutputPath
-
-@func_to_container_op
-def get_random_int_op(minimum: int, maximum: int) -> int:
-    import random
-    result = random.randint(minimum, maximum)
-    print(result)
-    return result
-
-
-@func_to_container_op
-def flip_coin_op() -> str:
-    import random
-    result = random.choice(['heads', 'tails'])
-    print(result)
-    return result
-
-
-@func_to_container_op
-def print_op(message: str):
-    print(message)
-
-
-@dsl.pipeline(
-    name='Conditional execution pipeline',
-    description='Shows how to use dsl.Condition().'
-)
-def flipcoin_pipeline():
-    flip = flip_coin_op()
-    with dsl.Condition(flip.output == 'heads'):
-        random_num_head = get_random_int_op(0, 9)
-        with dsl.Condition(random_num_head.output > 5):
-            print_op('heads and %s > 5!' % random_num_head.output)
-        with dsl.Condition(random_num_head.output <= 5):
-            print_op('heads and %s <= 5!' % random_num_head.output)
-
-    with dsl.Condition(flip.output == 'tails'):
-        random_num_tail = get_random_int_op(10, 19)
-        with dsl.Condition(random_num_tail.output > 15):
-            print_op('tails and %s > 15!' % random_num_tail.output)
-        with dsl.Condition(random_num_tail.output <= 15):
-            print_op('tails and %s <= 15!' % random_num_tail.output)
-
-
-@func_to_container_op
-def fail_op(message):
-    """Fails."""
-    import sys
-    print(message)
-    sys.exit(1)
-
-
-@dsl.pipeline(
-    name='Conditional execution pipeline with exit handler',
-    description='Shows how to use dsl.Condition() and dsl.ExitHandler().'
-)
-def flipcoin_exit_pipeline():
-    exit_task = print_op('Exit handler has worked!')
-    with dsl.ExitHandler(exit_task):
-        flip = flip_coin_op()
-        with dsl.Condition(flip.output == 'heads'):
-            random_num_head = get_random_int_op(0, 9)
-            with dsl.Condition(random_num_head.output > 5):
-                print_op('heads and %s > 5!' % random_num_head.output)
-            with dsl.Condition(random_num_head.output <= 5):
-                print_op('heads and %s <= 5!' % random_num_head.output)
-
-        with dsl.Condition(flip.output == 'tails'):
-            random_num_tail = get_random_int_op(10, 19)
-            with dsl.Condition(random_num_tail.output > 15):
-                print_op('tails and %s > 15!' % random_num_tail.output)
-            with dsl.Condition(random_num_tail.output <= 15):
-                print_op('tails and %s <= 15!' % random_num_tail.output)
-
-        with dsl.Condition(flip.output == 'tails'):
-            fail_op(message="Failing the run to demonstrate that exit handler still gets executed.")
-
-
-if __name__ == '__main__':
-    # Compiling the pipeline
-    kfp.compiler.Compiler().compile(flipcoin_exit_pipeline, __file__ + '.yaml')
-```
-<img src="https://user-images.githubusercontent.com/40620421/232314491-25457f28-6a8e-4a1c-bf13-652448f5adeb.png" width=600>
