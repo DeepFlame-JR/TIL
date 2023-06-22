@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_26 TILs and counting..._
+_27 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
-- [CKA_5_Storage](MLOps/CKA_5_Storage.md) - Wed Jun 21 19:54:46 2023 +0900
-- [CKA_6_Network](MLOps/CKA_6_Network.md) - Tue Jun 20 23:11:07 2023 +0900
+- [MLOps](MLOps/MLOps.md) - Thu Jun 22 21:32:44 2023 +0900
+- [Kubeflow](MLOps/Kubeflow.md) - Thu Jun 22 21:32:44 2023 +0900
 
 ### Categories
 
@@ -58,7 +58,8 @@ _26 TILs and counting..._
 - [CKA_5_Storage](MLOps/CKA_5_Storage.md)
 - [CKA_6_Network](MLOps/CKA_6_Network.md)
 - [Helm](MLOps/Helm.md)
-- [머신러닝_엔지니어_실무](MLOps/머신러닝_엔지니어_실무.md)
+- [Kubeflow](MLOps/Kubeflow.md)
+- [MLOps](MLOps/MLOps.md)
 
 [1]: https://simonwillison.net/2020/Apr/20/self-rewriting-readme/
 [2]: https://github.com/jbranchaud/til
