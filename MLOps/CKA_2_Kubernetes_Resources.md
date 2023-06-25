@@ -90,6 +90,40 @@ spec:
     command: ["sleep", "3600"]
 ```
 
+#### HPA(Horizontal Pod Autoscaler)
+- 자동으로 Pod의 수를 조절하여 애플리케이션의 수평 확장을 관리
+  - 트래픽 변화에 따라 Pod의 개수를 동적으로 조정하여 리소스 사용을 최적화하고 성능을 유지
+- 원리
+  - Deployment, ReplicaSet, 또는 StatefulSet과 같은 Kubernetes 리소스와 연결
+  - HPA는 지정된 대상 리소스의 현재 CPU 사용률을 지속적으로 모니터링
+  - CPU 사용률 임계값에 따라 HPA는 Pod의 수를 조정
+    - Pod의 수를 조정하기 위해 HPA는 Kubernetes API를 통해 Replication Controller 또는 ReplicaSet과 같은 관련 리소스를 업데이트
+      - Deployment 생성 + Deployment 내 Pod 수 증가
+- 단점
+  - 지연 시간: HPA는 메트릭 수집 및 평가, Pod의 확장 또는 축소 등 추가적인 작업을 수행 > 시간이 소요
+  - 설정 복잡성: HPA를 구성하기 위해서는 메트릭 서버와 메트릭 수집 설정, CPU 사용률 임계값, 최소 및 최대 Pod 수 등 여러 가지 설정이 필요
+- 예시
+```yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: my-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: my-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
 ### Replication Controller
 - 사용자가 지정한 복제 수에 따라 Pod의 복제본을 생성 및 관리 > `고가용성 보장`
     - 클러스터에는 여러 노드가 있음 > 한 노드에서 장애가 발생해도 다른 노드를 활용해서 애플리케이션이 실행됨을 보장할 수 있음
