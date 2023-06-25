@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_27 TILs and counting..._
+_28 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [MLflow](MLOps/MLflow.md) - Fri Jun 23 23:11:41 2023 +0900
 - [MLOps](MLOps/MLOps.md) - Thu Jun 22 21:32:44 2023 +0900
-- [Kubeflow](MLOps/Kubeflow.md) - Thu Jun 22 21:32:44 2023 +0900
 
 ### Categories
 
@@ -60,6 +60,7 @@ _27 TILs and counting..._
 - [Helm](MLOps/Helm.md)
 - [Kubeflow](MLOps/Kubeflow.md)
 - [MLOps](MLOps/MLOps.md)
+- [MLflow](MLOps/MLflow.md)
 
 [1]: https://simonwillison.net/2020/Apr/20/self-rewriting-readme/
 [2]: https://github.com/jbranchaud/til
