@@ -10,8 +10,8 @@ _28 TILs and counting..._
 
 ### 2 most recent TILs
 
+- [Docker](MLOps/Docker.md) - Sun Jun 25 22:24:30 2023 +0900
 - [MLflow](MLOps/MLflow.md) - Fri Jun 23 23:11:41 2023 +0900
-- [MLOps](MLOps/MLOps.md) - Thu Jun 22 21:32:44 2023 +0900
 
 ### Categories
 
@@ -19,7 +19,6 @@ _28 TILs and counting..._
 - [BigData](#BigData)
 - [CS](#CS)
 - [Conference](#Conference)
-- [Docker_K8S](#Docker_K8S)
 - [MLOps](#MLOps)
 
 ### [AWS](#AWS)
@@ -47,9 +46,6 @@ _28 TILs and counting..._
 - [2022_WOOWACON_아키텍처_이벤트](Conference/2022_WOOWACON_아키텍처_이벤트.md)
 - [2023_모두의연구소_글로벌_MLOps트렌드](Conference/2023_모두의연구소_글로벌_MLOps트렌드.md)
 
-### [Docker_K8S](#Docker_K8S)
-- [Docker](Docker_K8S/Docker.md)
-
 ### [MLOps](#MLOps)
 - [CKA_1_Core_Concept](MLOps/CKA_1_Core_Concept.md)
 - [CKA_2_Kubernetes_Resources](MLOps/CKA_2_Kubernetes_Resources.md)
@@ -57,6 +53,7 @@ _28 TILs and counting..._
 - [CKA_4_Operation_in_Kubernetes](MLOps/CKA_4_Operation_in_Kubernetes.md)
 - [CKA_5_Storage](MLOps/CKA_5_Storage.md)
 - [CKA_6_Network](MLOps/CKA_6_Network.md)
+- [Docker](MLOps/Docker.md)
 - [Helm](MLOps/Helm.md)
 - [Kubeflow](MLOps/Kubeflow.md)
 - [MLOps](MLOps/MLOps.md)
