@@ -1,31 +1,5 @@
 2_Network
 
-# 목차
-  * [기초](#기초)
-    + [처리량과 지연 시간](#처리량과-지연-시간)
-    + [네트워크 토폴로지(Network topology)](#네트워크-토폴로지network-topology)
-  * [TCP/IP 4계층 모델](#tcpip-4계층-모델)
-    + [Application 계층](#application-계층)
-    + [Transport 계층](#transport-계층)
-    + [Internet 계층](#internet-계층)
-    + [Link 계층](#link-계층)
-    + [계층 간에 데이터 송수신](#계층-간에-데이터-송수신)
-  * [IP 주소](#ip-주소)
-    + [ARP (Address Resolution Protocol)](#arp-address-resolution-protocol)
-    + [홉바이홉 통신](#홉바이홉-통신)
-      - [라우팅 테이블](#라우팅-테이블)
-      - [게이트웨이](#게이트웨이)
-    + [IP 주소 체계](#ip-주소-체계)
-      - [NAT (Network Address Translation)](#nat-network-address-translation)
-  * [HTTP](#http)
-    + [HTTP/1.0](#http10)
-    + [HTTP/1.1](#http11)
-    + [HTTP/2](#http2)
-    + [HTTPS](#https)
-
-<br>
-<br>
-<br>
 
 # 네트워크
 
