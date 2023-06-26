@@ -177,3 +177,47 @@ netstat -nplt  # 리스닝 중인 포트와 소켓 정보를 표시
     -- | --
     서비스 IP | 서비스에 속한 Pod의 IP
     - 서비스 IP를 요청받으면 Pod로 네트워킹 됨
+
+### Ingress
+- 클러스터 내부 또는 외부에서 애플리케이션에 접근하기 위한 진입점을 제공하는 리소스
+    - HTTP 및 HTTPS 트래픽을 관리하며, 클라이언트의 요청을 서비스로 전달하는 역할을 수행
+    - 트래픽의 분산, 가상 호스트, 경로 기반 라우팅, SSL/TLS 암호화 등 다양한 기능을 제공
+- 특징
+    - 외부 노출
+        - Ingress는 클러스터 외부에 있는 로드 밸런서나 인그레스 컨트롤러를 통해 클러스터 내부의 서비스를 외부로 노출
+        - 클라이언트는 특정 도메인 이름 또는 경로를 사용하여 서비스에 접근
+    - 가상 호스트
+        - Ingress는 가상 호스트를 지원하여 동일한 IP 주소 및 포트에서 다수의 도메인 이름을 사용하여 다른 서비스에 접근
+        - 예를 들어, example.com 및 api.example.com 도메인을 사용하여 각각 다른 서비스에 접근
+    - 경로 기반 라우팅
+        - Ingress는 경로 기반 라우팅을 지원하여 특정 URL 경로를 사용하여 서비스로 요청을 전달
+        - 이를 통해 서로 다른 경로에 대해 다른 서비스로 트래픽을 분배
+    - SSL/TLS 지원
+        - SSL/TLS 암호화를 지원하여 애플리케이션의 보안을 강화
+        - 인그레스 컨트롤러가 SSL/TLS 인증서를 관리하고 암호화된 트래픽을 업스트림 서비스로 전달
+- 예시
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+spec:
+  rules:
+    - host: example.com
+      http:
+        paths:
+          - path: /service1  # example/service1은 service1로 전달
+            pathType: Prefix
+            backend:
+              service:
+                name: service1
+                port:
+                  number: 80
+          - path: /service2  # example/service2는 service2로 전달
+            pathType: Prefix
+            backend:
+              service:
+                name: service2
+                port:
+                  number: 80
+```

@@ -124,7 +124,7 @@ Kubeflow
 #### Environment
 - 컴포넌트에 이미지와 package 등의 환경을 설정할 수 있음
 ```py
-    @partial(
+@partial(
     create_component_from_func,
     packages_to_install=["dill==0.3.4", "pandas==1.3.4", "scikit-learn==1.0.1"],
 )
@@ -181,8 +181,22 @@ def example_pipeline(number_1: int, number_2: int):
 - Run은 고유의 ID를 가지고, 모든 Artifacts를 저장
     - 모든 단계의 Output을 추적할 수 있음
 
-
-
+### Model Serving
+- TensorFlow Serving과 Seldon Core를 기반으로 구축되어, 쉽고 확장 가능한 모델 배포 및 추론 환경을 제공
+- 개념과 기능
+    - 모델 배포
+        - 모델을 컨테이너로 패키징하고 Kubernetes 클러스터에 배포하는 기능
+        - 모델은 컨테이너 이미지로 변환되어 Kubeflow Model Serving 내에서 관리
+    - 추론 엔진
+        - Kubeflow Model Serving은 모델의 추론을 수행하는 추론 엔진을 제공
+        - TensorFlow Serving 및 Seldon Core를 기반으로 하며, 여러 모델 및 버전을 동시에 관리하고 추론 요청에 대한 스케일링과 로드 밸런싱을 수행
+    - 모델 버전 관리
+        - 여러 버전의 모델을 동시에 배포하고, 특정 버전으로의 롤백 및 트래픽 분배 비율을 설정
+        - 모델 업데이트 및 A/B 테스트를 수행
+    - 모델 모니터링
+        - 모델의 추론 요청 및 응답, 지표 및 로그를 모니터링하고 대시보드에서 시각화
+    - 스케일링 및 자동화
+        - 예를 들어, 오토스케일링 기능을 통해 추론 요청에 따라 자동으로 인스턴스를 확장하거나 축소 가능
 
 ## Pipeline 예시
 설치 참고
