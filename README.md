@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_28 TILs and counting..._
+_29 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [6_Architecture](CS/6_Architecture.md) - Mon Jun 26 20:23:17 2023 +0900
 - [Docker](MLOps/Docker.md) - Sun Jun 25 22:24:30 2023 +0900
-- [MLflow](MLOps/MLflow.md) - Fri Jun 23 23:11:41 2023 +0900
 
 ### Categories
 
@@ -36,6 +36,7 @@ _28 TILs and counting..._
 - [3_OS](CS/3_OS.md)
 - [4_Database](CS/4_Database.md)
 - [5_Data_Structure](CS/5_Data_Structure.md)
+- [6_Architecture](CS/6_Architecture.md)
 
 ### [Conference](#Conference)
 - [2022_AWSKRUG_데이퍼플랫폼_최신기술](Conference/2022_AWSKRUG_데이퍼플랫폼_최신기술.md)
