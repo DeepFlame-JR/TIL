@@ -707,3 +707,46 @@ def heap_sort(arr):
 
 
 ## 백트래킹
+- 해를 찾기 위해 모든 가능한 경우의 수를 탐색하는 알고리즘
+    - 해를 찾기 위해 후보군을 탐색하면서 조건을 만족하는지 검사하고, 조건을 만족하지 않으면 이전 단계로 돌아가 다른 후보군을 탐색
+    - 재귀적인 방식으로 구현
+- 예시
+```py
+def combinations(nums, k):
+    result = []
+    
+    def backtrack(start, combination):
+        if len(combination) == k:
+            result.append(combination[:])
+            return
+        
+        for i in range(start, len(nums)):
+            combination.append(nums[i])
+            backtrack(i + 1, combination)
+            combination.pop()
+    
+    backtrack(0, [])
+    return result
+
+---
+
+def permutations(nums):
+    result = []
+    
+    def backtrack(nums, permutation):
+        if len(permutation) == len(nums):
+            result.append(permutation[:])
+            return
+        
+        for num in nums:
+            if num in permutation:
+                continue
+            permutation.append(num)
+            backtrack(nums, permutation)
+            permutation.pop()
+    
+    backtrack(nums, [])
+    return result
+
+```
+
