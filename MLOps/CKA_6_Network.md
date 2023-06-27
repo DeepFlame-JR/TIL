@@ -221,3 +221,6 @@ spec:
                 port:
                   number: 80
 ```
+
+#### 클라이언트 요청 처리 순서
+- Ingress > Load Balancer > Kube Proxy > Pod
