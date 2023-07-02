@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_30 TILs and counting..._
+_31 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [Fast_API](Backend/Fast_API.md) - Thu Jun 29 21:09:40 2023 +0900
 - [REST_API](Backend/REST_API.md) - Wed Jun 28 19:47:41 2023 +0900
-- [6_Architecture](CS/6_Architecture.md) - Mon Jun 26 20:23:17 2023 +0900
 
 ### Categories
 
@@ -28,6 +28,7 @@ _30 TILs and counting..._
 - [Developing_of_AWS](AWS/Developing_of_AWS.md)
 
 ### [Backend](#Backend)
+- [Fast_API](Backend/Fast_API.md)
 - [REST_API](Backend/REST_API.md)
 
 ### [BigData](#BigData)
