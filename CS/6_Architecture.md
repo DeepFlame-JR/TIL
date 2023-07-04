@@ -254,3 +254,23 @@
         - 스케줄링하고 모니터링하기 위해 배치 처리 프레임워크나 도구를 사용
     - 데이터 파이프라인
         - 데이터 수집, 변환, 저장, 분석 등의 작업을 연결하여 데이터 처리 과정을 자동화하고 최적화
+
+## 클라우드 서비스 유형
+
+### Infrastructure as a Service, IaaS
+- 가장 기본적인 클라우드 서비스 유형으로, 가상화된 컴퓨팅 리소스를 제공
+    - 가상 머신, 스토리지, 네트워킹 등의 인프라 리소스를 필요에 따라 프로비저닝하고 관리
+    - 예. Amazon Web Services (AWS)의 EC2, Microsoft Azure의 Virtual Machines 등
+- 사용자는 인프라 관리에 대한 부담을 줄이고, 필요한 리소스를 유연하게 프로비저닝 가능
+
+### Platform as a Service, PaaS
+- 개발자가 애플리케이션을 개발, 테스트 및 배포하기 위한 플랫폼 환경
+    - 애플리케이션 개발에 필요한 운영체제, 미들웨어, 데이터베이스 등의 환경을 선택
+    - 인프라 관리에 대한 부담을 줄여 개발에 집중
+    - 예. Google Cloud Platform의 App Engine, Heroku, Microsoft Azure의 App Service 등
+- 개발자는 인프라 관리에 대한 부담을 덜고, 애플리케이션 개발에 집중 가능
+
+### Software as a Service, SaaS
+- 최종 사용자에게 웹 브라우저나 모바일 앱을 통해 애플리케이션을 제공하는 서비스 형태
+    - 애플리케이션을 설치하거나 관리할 필요 없이 인터넷을 통해 서비스를 이용
+    - 예. Google Workspace, Salesforce, Dropbox, Microsoft 365 등
