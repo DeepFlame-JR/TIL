@@ -43,7 +43,7 @@ _33 TILs and counting..._
 - [4_Database](CS/4_Database.md)
 - [5_Data_Structure](CS/5_Data_Structure.md)
 - [6_Architecture](CS/6_Architecture.md)
-- [System_Design_Interview](CS/System_Design.md)
+- [System_Design](CS/System_Design.md)
 
 ### [Conference](#Conference)
 - [2022_AWSKRUG_데이퍼플랫폼_최신기술](Conference/2022_AWSKRUG_데이퍼플랫폼_최신기술.md)
