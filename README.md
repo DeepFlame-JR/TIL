@@ -4,7 +4,7 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_33 TILs and counting..._
+_34 TILs and counting..._
 
 ---
 
@@ -15,12 +15,16 @@ _33 TILs and counting..._
 
 ### Categories
 
+- [AI](#AI)
 - [AWS](#AWS)
 - [Backend](#Backend)
 - [BigData](#BigData)
 - [CS](#CS)
 - [Conference](#Conference)
 - [MLOps](#MLOps)
+
+### [AI](#AI)
+- [LLM](AI/LLM.md)
 
 ### [AWS](#AWS)
 - [AWS_Technical_Essentials](AWS/AWS_Technical_Essentials.md)
