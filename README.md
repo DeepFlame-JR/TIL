@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_34 TILs and counting..._
+_35 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [2023_MLOps_Community_Meetup](Conference/2023_MLOps_Community_Meetup.md) - Wed Jul 12 20:32:37 2023 +0900
 - [SpringBoot](Backend/SpringBoot.md) - Fri Jun 30 13:11:41 2023 +0900
-- [Fast_API](Backend/Fast_API.md) - Thu Jun 29 21:09:40 2023 +0900
 
 ### Categories
 
@@ -56,6 +56,7 @@ _34 TILs and counting..._
 - [2022_WOOWACON_Kafka](Conference/2022_WOOWACON_Kafka.md)
 - [2022_WOOWACON_아키텍처](Conference/2022_WOOWACON_아키텍처.md)
 - [2022_WOOWACON_아키텍처_이벤트](Conference/2022_WOOWACON_아키텍처_이벤트.md)
+- [2023_MLOps_Community_Meetup](Conference/2023_MLOps_Community_Meetup.md)
 - [2023_모두의연구소_글로벌_MLOps트렌드](Conference/2023_모두의연구소_글로벌_MLOps트렌드.md)
 
 ### [MLOps](#MLOps)
