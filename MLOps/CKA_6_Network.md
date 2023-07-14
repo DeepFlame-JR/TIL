@@ -151,6 +151,15 @@ netstat -nplt  # 리스닝 중인 포트와 소켓 정보를 표시
 - 컨테이너 네트워크 인터페이스 (CNI) 플러그인으로 사용되는 솔루션 중 하나
     - 기존에 IP 주소를 통한 통신을 비효율적
         - Pod > Node > Service > Node > Pod
+    - IP가 중복되지 않도록 테이블을 통한 관리
+        ```
+        IP	Status	Pod
+        10.32.0.1	Assigned	pod-1
+        10.32.0.2	Assigned	pod-2
+        10.32.0.3	Available	-
+        10.32.0.4	Assigned	pod-3
+        10.32.0.5	Available	-
+        ```
 - 특징
     - 가상 네트워크
         - Kubernetes 클러스터 내의 모든 노드와 컨테이너 간의 통신을 위한 네트워크를 구성
@@ -179,6 +188,7 @@ netstat -nplt  # 리스닝 중인 포트와 소켓 정보를 표시
         - 패킷은 Weave의 가상 네트워크를 통해 목적지 컨테이너 B에 도달
         - 목적지 컨테이너 B는 패킷을 받아들이고, 필요한 작업을 수행한 후 응답을 송신 컨테이너 A에게 반환
 
+
 ### Pod Networking
 - Pod 간에 네트워킹은 어려움
     - Pod 내에서 인스턴스 간에 네트워킹
@@ -205,10 +215,51 @@ netstat -nplt  # 리스닝 중인 포트와 소켓 정보를 표시
     - Node에 종속되지도 않음
 - Service 생성
     - 각 Node의 Kube-proxy에 Forwarding rule을 저장한다
+    ```
     {IP Address}:{port} | Forward To
-    -- | --
     서비스 IP | 서비스에 속한 Pod의 IP
+    ```
     - 서비스 IP를 요청받으면 Pod로 네트워킹 됨
+
+### DNS in Kubernetes
+- DNS 이름을 IP 주소로 해석하고, 서비스 및 Pod 간의 통신을 가능하게 함
+    - 서비스 및 Pod를 식별
+    - 애플리케이션은 동적인 환경에서 서비스 디스커버리와 로드 밸런싱을 수행
+    - 기본적으로 DNS가 구성됨
+    - Service DNS Example: `<service-name>.<namespace>.svc.cluster.local`
+- DNS는 서버로 따로 관리됨 (CoreDNS)
+    - 만약 각자 컨테이너가 가지고 있다면 비효율적으로 중복되는 값이 들어감
+    - 각 컨테이너는 DNS 서버 정보만 가지고 있어도 됨
+    - kube-system namespace에 존재함
+- 임의로 설정 가능 (spec>containers>args)
+    ```
+    apiVersion: v1
+    kind: Pod
+    metadata:
+        name: my-pod
+    spec:
+    containers:
+        - name: my-container
+        image: my-image
+        ports:
+            - containerPort: 8080
+        command: ["my-application"]
+        args: ["--service-host=my-service.default.svc.cluster.local"]
+    ```
+- 테이블
+    ```
+    +---------------------+-------------------+-------------------+-------------------+-------------------+
+    |       DNS Name      |    Namespace      |     IP Address     |   Service Type    |     Annotations    |
+    +---------------------+-------------------+-------------------+-------------------+-------------------+
+    |  my-service         |     default       |  10.32.0.5         |   ClusterIP       |    -               |
+    |  my-service         |     namespace1    |  10.32.0.10        |   ClusterIP       |    -               |
+    |  my-service         |     namespace2    |  10.32.0.15        |   ClusterIP       |    -               |
+    |  backend-service    |     default       |  10.32.0.20        |   ClusterIP       |    -               |
+    |  frontend-service   |     default       |  10.32.0.25        |   ClusterIP       |    -               |
+    |  my-pod             |     default       |  10.32.1.5         |   Pod             |    app=my-app      |
+    |  your-pod           |     default       |  10.32.1.10        |   Pod             |    app=your-app    |
+    +---------------------+-------------------+-------------------+-------------------+-------------------+
+    ```
 
 ### Ingress
 - 클러스터 내부 또는 외부에서 애플리케이션에 접근하기 위한 진입점을 제공하는 리소스
