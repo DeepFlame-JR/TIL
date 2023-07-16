@@ -263,6 +263,7 @@ netstat -nplt  # 리스닝 중인 포트와 소켓 정보를 표시
 
 ### Ingress
 - 클러스터 내부 또는 외부에서 애플리케이션에 접근하기 위한 진입점을 제공하는 리소스
+    - IP:port로 접근하는 방식에서 벗어남
     - HTTP 및 HTTPS 트래픽을 관리하며, 클라이언트의 요청을 서비스로 전달하는 역할을 수행
     - 트래픽의 분산, 가상 호스트, 경로 기반 라우팅, SSL/TLS 암호화 등 다양한 기능을 제공
 - 특징
@@ -279,31 +280,53 @@ netstat -nplt  # 리스닝 중인 포트와 소켓 정보를 표시
         - SSL/TLS 암호화를 지원하여 애플리케이션의 보안을 강화
         - 인그레스 컨트롤러가 SSL/TLS 인증서를 관리하고 암호화된 트래픽을 업스트림 서비스로 전달
 - 예시
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: my-ingress
-spec:
-  rules:
-    - host: example.com
-      http:
-        paths:
-          - path: /service1  # example/service1은 service1로 전달
-            pathType: Prefix
-            backend:
-              service:
-                name: service1
-                port:
-                  number: 80
-          - path: /service2  # example/service2는 service2로 전달
-            pathType: Prefix
-            backend:
-              service:
-                name: service2
-                port:
-                  number: 80
-```
+    ```yaml
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+        name: my-ingress
+    spec:
+    rules:
+        - host: example.com
+        http:
+            paths:
+            - path: /service1  # example/service1은 service1로 전달
+                pathType: Prefix
+                backend:
+                service:
+                    name: service1
+                    port:
+                    number: 80
+            - path: /service2  # example/service2는 service2로 전달
+                pathType: Prefix
+                backend:
+                service:
+                    name: service2
+                    port:
+                    number: 80
+    ```
+- 클라이언트 요청 처리 순서
+    ```
+        +--------------+
+        |   Ingress    |
+        +--------------+
+                |
+                |
+                v
+        +--------------+
+        | Load Balancer|
+        +--------------+
+                |
+                |
+                v
+        +--------------+
+        |  Kube Proxy  |
+        +--------------+
+                |
+                |
+                v
+        +--------------+
+        |   Pod(s)     |
+        +--------------+
 
-#### 클라이언트 요청 처리 순서
-- Ingress > Load Balancer > Kube Proxy > Pod
+    ```
