@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_36 TILs and counting..._
+_37 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [DL](AI/DL.md) - Wed Jul 26 23:16:44 2023 +0900
 - [CKA_0_Practice](MLOps/CKA_0_Practice.md) - Tue Jul 25 21:48:57 2023 +0900
-- [2023_MLOps_Community_Meetup](Conference/2023_MLOps_Community_Meetup.md) - Wed Jul 12 20:32:37 2023 +0900
 
 ### Categories
 
@@ -24,6 +24,7 @@ _36 TILs and counting..._
 - [MLOps](#MLOps)
 
 ### [AI](#AI)
+- [DL](AI/DL.md)
 - [LLM](AI/LLM.md)
 
 ### [AWS](#AWS)
