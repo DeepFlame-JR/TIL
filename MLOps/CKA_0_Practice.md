@@ -24,7 +24,7 @@ CKA_0_Practice
 kubectl api-resources
 
 kubectl apply -f <pod-definition.yaml>
-kubectl replace --force -f <pod-definition.yaml>
+kubectl replace --force -f <pod-definition.yaml>  # edit 후에 적용이 안 된 /tmp/ 파일 대상
 
 kubectl get po my-pod -o yaml > my-pod.yaml
 
@@ -78,4 +78,47 @@ vi /var/lib/kubelet/config.yaml # static pod 경로 확인
 # Scheduler 설정
 spec:
   schedulerName: my-scheduler
+```
+
+## 3. Logging & Monitoring
+
+```powershell
+# 리소스 사용량 확인
+k top node
+k top pod
+
+k logs <pod-name>
+```
+
+## 4. Application Lifecycle Management
+
+```powershell
+# 롤링업데이트
+kubectl set image deployment <deployment-name> <container-name>=<new-image>
+
+# Command
+# yaml 파일에 command가 설정되어 있다면 덮어씀
+  containers:
+  - name: my-container
+    image: my-image
+    # case 1
+    command: ["sleep", "5000"]
+    # case2
+    command: ["echo", "Hello, Kubernetes!"]
+    # case3
+    command: ["echo"]
+    args: ["Hello, Kubernetes!"]
+
+# secret 생성
+kubectl create secret generic my-secret --from-literal=username=myuser --from-literal=password=mypassword
+
+# env 설정
+  containers:
+    - name: my-container
+      image: my-image
+      envFrom:
+        - secretRef:
+            name: my-secret
+        - configMapRef:
+            name: my-configmap
 ```
