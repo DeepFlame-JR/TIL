@@ -90,6 +90,34 @@ spec:
     command: ["sleep", "3600"]
 ```
 
+#### Initcontainer
+- 주로 애플리케이션 컨테이너가 실행되기 전에 사전 설정 작업을 수행하는 데 사용
+  - Pod의 일부로 실행되며, Init Container의 실행이 성공적으로 완료되어야만 주 컨테이너가 실행
+  - Init Container에서 실패 가능성이 있는 작업을 수행할 때는 적절한 오류 처리를 고려
+- 목적
+  - 사전 준비 작업: 데이터베이스 컨테이너를 실행하기 전에 데이터베이스 스키마를 초기화하거나, 파일을 다운로드하거나, 설정 파일을 복사하는 등의 작업 등
+  - 복잡한 초기화: 여러 개의 컨테이너가 병렬로 실행되는 경우 Init Container를 사용하여 컨테이너 간의 초기화 순서를 관리
+- 예시
+  - 총 15초를 기다려야 함
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  initContainers:
+    - name: init-container-1
+      image: busybox
+      command: ['sh', '-c', 'echo "Initializing..." && sleep 5']
+    - name: init-container-2
+      image: busybox
+      command: ['sh', '-c', 'echo "Performing setup..." && sleep 10']
+  containers:
+    - name: main-container
+      image: my-app-image
+```
+
+
 #### HPA(Horizontal Pod Autoscaler)
 - 자동으로 Pod의 수를 조절하여 애플리케이션의 수평 확장을 관리
   - 트래픽 변화에 따라 Pod의 개수를 동적으로 조정하여 리소스 사용을 최적화하고 성능을 유지

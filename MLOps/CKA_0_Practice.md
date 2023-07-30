@@ -46,7 +46,7 @@ kubectl set replicas deployment/my-deployment --replicas=3
 
 ## 2. Scheduling
 
-```powershell
+```yaml
 # kube system의 POD 확인
 k get po -n kube-system
 
@@ -92,7 +92,7 @@ k logs <pod-name>
 
 ## 4. Application Lifecycle Management
 
-```powershell
+```yaml
 # 롤링업데이트
 kubectl set image deployment <deployment-name> <container-name>=<new-image>
 
@@ -121,4 +121,23 @@ kubectl create secret generic my-secret --from-literal=username=myuser --from-li
             name: my-secret
         - configMapRef:
             name: my-configmap
+
+k drain node-1  # 노드를 의도적으로 비움 (replicaset이 아닌 pod가 있으면 에러)
+k cordon node-1  # 노드를 예약 불가능 상태로 만듬
+k uncordon node-1  # 노드 재부팅 (새로운 Pod부터 예약됨)
+
+# K8s 버전 업그레이드
+apt-get update
+apt-get install kubeadm=1.27.0-00
+apt-get install kubelet=1.27.0-00 
+systemctl daemon-reload
+systemctl restart kubelet
+
+kubeadm upgrade plan  # 업그레이드 버전 확인
+
+k cordon controlplane 
+kubeadm upgrade apply v1.27.0  # 마스터노드 업그레이드
+
+ssh node01
+kubeadm upgrade node
 ```
