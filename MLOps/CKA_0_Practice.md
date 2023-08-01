@@ -17,6 +17,12 @@ CKA_0_Practice
   - CNI(Continer Network Interface) 플러그인의 구성 파일들이 위치하는 디렉토리
   - 네트워킹 관련 설정들이 이곳에 저장
 
+### 명령어
+```powershell
+crictl ps # Container Runtime에 의해서 발생한 컨테이너의 상태를 확인
+scp user@remote_host:/path/to/remote/file /path/to/local/destination # Secure Copy Protocol
+```
+
 ## 1. Core Concept
 
 ```powershell
@@ -125,7 +131,9 @@ kubectl create secret generic my-secret --from-literal=username=myuser --from-li
 k drain node-1  # 노드를 의도적으로 비움 (replicaset이 아닌 pod가 있으면 에러)
 k cordon node-1  # 노드를 예약 불가능 상태로 만듬
 k uncordon node-1  # 노드 재부팅 (새로운 Pod부터 예약됨)
+```
 
+``` yaml
 # K8s 버전 업그레이드
 apt-get update
 apt-get install kubeadm=1.27.0-00
@@ -140,4 +148,30 @@ kubeadm upgrade apply v1.27.0  # 마스터노드 업그레이드
 
 ssh node01
 kubeadm upgrade node
+
+# etcd 환경변수
+# 이 URL을 통해 클라이언트는 etcd 서버에 접속하여 데이터를 조회하거나 변경
+--listen-client-urls=https://127.0.0.1:2379,https://192.14.117.9:2379
+# 메트릭을 수집하는 URL. 메트릭 정보는 모니터링과 성능 관련 용도로 사용.
+--listen-metrics-urls=http://127.0.0.1:2381
+# 각 멤버는 피어 간에 이 URL을 통해 통신하여 클러스터 상태를 동기화하고 분산 데이터베이스로 동작
+--listen-peer-urls=https://192.14.117.9:2380
+
+# backup/restore
+ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 \
+  --cacert=<trusted-ca-file> --cert=<cert-file> --key=<key-file> \
+  snapshot save <백업파일경로>
+
+ETCDCTL_API=3 etcdctl snapshot restore <백업파일경로> --data-dir <데이터디렉토리경로>
+
+vi /etc/kubernetes/manifests/etcd.yaml
+volumes:
+- hostPath:
+    path: /var/lib/etcd-from-backup
+    type: DirectoryOrCreate
+  name: etcd-data
+
+
+k config view # cluster 현황 확인
+k config use-context cluster1 # cluster 이동
 ```
