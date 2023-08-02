@@ -175,3 +175,27 @@ volumes:
 k config view # cluster 현황 확인
 k config use-context cluster1 # cluster 이동
 ```
+
+
+## 7. Security
+```yaml
+/etc/kubernetes/manifests/kube-apiserver.yaml
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+      <content-hidden>
+    image: k8s.gcr.io/kube-apiserver-amd64:v1.11.3
+    name: kube-apiserver
+    volumeMounts:
+    - mountPath: /tmp/users
+      name: usr-details
+      readOnly: true
+  volumes:
+  - hostPath:
+      path: /tmp/users
+      type: DirectoryOrCreate
+    name: usr-details
+
+curl -v -k https://localhost:6443/api/v1/pods -u "user1:password123"
+```
