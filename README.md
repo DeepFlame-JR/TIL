@@ -4,7 +4,7 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_37 TILs and counting..._
+_38 TILs and counting..._
 
 ---
 
@@ -68,6 +68,7 @@ _37 TILs and counting..._
 - [CKA_4_Operation_in_Kubernetes](MLOps/CKA_4_Operation_in_Kubernetes.md)
 - [CKA_5_Storage](MLOps/CKA_5_Storage.md)
 - [CKA_6_Network](MLOps/CKA_6_Network.md)
+- [CKA_7_Security](MLOps/CKA_7_Security.md)
 - [Docker](MLOps/Docker.md)
 - [Helm](MLOps/Helm.md)
 - [Kubeflow](MLOps/Kubeflow.md)
