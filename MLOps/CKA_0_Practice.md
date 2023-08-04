@@ -176,6 +176,15 @@ k config view # cluster 현황 확인
 k config use-context cluster1 # cluster 이동
 ```
 
+## 5. Storage
+```yaml
+# PVC가 Pending 상태
+# PVC를 활용한 POD가 아직 생성되지 않았기 때문에
+Events:
+  Type    Reason                Age                From                         Message
+  ----    ------                ----               ----                         -------
+  Normal  WaitForFirstConsumer  11s (x3 over 28s)  persistentvolume-controller  waiting for first consumer to be created before binding
+```
 
 ## 7. Security
 ```yaml
