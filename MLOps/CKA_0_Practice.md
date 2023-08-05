@@ -186,6 +186,50 @@ Events:
   Normal  WaitForFirstConsumer  11s (x3 over 28s)  persistentvolume-controller  waiting for first consumer to be created before binding
 ```
 
+## 6. Network
+```yaml
+# Node Network
+ip address  # node와 연관된 network 정보 (IP, Mac Address 등)
+lo: loopback 인터페이스로, 자기 자신으로의 루프백(Loopback) 트래픽을 처리 (127.0.0.1/8)
+flannel.1: flannel 네트워크 인터페이스로, Kubernetes 클러스터에서 노드 간 통신을 위해 사용
+cni0: CNI (Container Network Interface) 인터페이스로, 컨테이너들 간의 통신을 처리
+veth85879640@if2 및 vethee201166@if2: CNI 네트워크 인터페이스에 속하는 가상 인터페이스들로, 각각 cni0 인터페이스에 속함
+eth0@if8256 및 eth1@if8260: 호스트 노드에 있는 실제 물리 인터페이스
+
+
+ip route  # node와 관련된 route 정보 
+# 기본 라우트. 어떤 목적지로 가는 패킷이 192.168.0.1을 통해 전송되어야 함. dev etho0는 네트워크 인터페이스
+# 노드 내부에서 사용되는 flannel 네트워크에 대한 라우트. 10.244.0.0/32 범위는 flannel.1을 통해 전송
+# 다른 네트워크의 eth1로 가는 패킷에 대한 라우트. 172.25.0.0/24 범위는 eth1를 통해 전송
+# 다른 네트워크의 eth0로 가는 패킷에 대한 라우트. 192.168.0.0/24 범위는 eth0을 통해 전송
+default via 192.168.0.1 dev eth0 proto static 
+10.244.0.0/32 dev flannel.1 proto kernel scope link src 10.244.0.0 
+172.25.0.0/24 dev eth1 proto kernel scope link src 172.25.0.14 
+192.168.0.0/24 dev eth0 proto kernel scope link src 192.168.0.100 
+
+
+# network 연결과 라우팅 테이블 정보 확인
+netstat 
+-a: 모든 연결과 소켓 정보 표시
+-n: 주소를 숫자형식으로 표시 
+-p: 프로세스 정보 표시
+-l: Listening 중인 소켓 표시
+-t: TCP 연결정보만 표시
+-u: UDP 연결정보만 표시
+netstat -anp  # 모든 연결 및 소켓 정보를 숫자 형식으로 표시
+
+# (LISTEN) Local Address가 Foreign Address로부터 요청을 대기하고 있다
+# (ESTABLISHED) SSH 클라이언트와 서버 간의 연결이 수립되어 있다
+Proto Recv-Q Send-Q Local Address           Foreign Address         State      
+tcp        0      0 127.0.0.1:2379          0.0.0.0:*               LISTEN     
+tcp        0      0 127.0.0.1:2380          0.0.0.0:*               LISTEN     
+tcp        0      0 192.168.1.10:22         192.168.1.20:12345      ESTABLISHED
+tcp6       0      0 :::80                   :::*                    LISTEN     
+udp        0      0 0.0.0.0:53              0.0.0.0:*                          
+udp6       0      0 :::53                   :::*    
+
+```
+
 ## 7. Security
 ```yaml
 /etc/kubernetes/manifests/kube-apiserver.yaml

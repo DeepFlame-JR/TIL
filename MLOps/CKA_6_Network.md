@@ -34,7 +34,7 @@ CKA_6_Network
     - 예시
         Destination IP | Next Hop	| Interface
         --|--|--
-        192.168.1.0/24	 | 10.0.0.1 |	eth0
+        192.168.1.0/24	 | 10.0.0.1 |	eth0 (첫번째 이더넷 카드)
         10.0.0.0/24	| 192.168.1.1 |	eth1
         0.0.0.0/0 |	10.0.0.2 |	eth2
 - 종류
@@ -108,27 +108,23 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
 
 ## Cluster Node Networking
 - Control plane
-    Port Range | Purpose | Usde By
-    --|--|--
-    6443 |	Kubernetes API server |	All
-    2379-2380 |	etcd server client API |	kube-apiserver, etcd
-    10250 |	Kubelet API |	Self, Control plane
-    10259 |	kube-scheduler |	Self
-    10257 |	kube-controller-manager |	Self
-- Worker node
-    Port Range | Purpose | Usde By
-    --|--|--
-    10250 |	Kubelet API  |	Self
-    30000-32767 |	NodePort Services |	All
+    ```
+    Port Range | Purpose                   | Used By
+    --------------------------------------------------
+    6443       | Kubernetes API server     | All
+    2379-2380  | etcd server client API    | kube-apiserver, etcd
+    10250      | Kubelet API               | Self, Control plane
+    10259      | kube-scheduler            | Self
+    10257      | kube-controller-manager   | Self
+    ```
 
-```powershell
-ip address  # node와 연관된 network 정보 
-ip route  # node와 관련된 route 정보 
-ssh node1 / exit  # node로 이동 / 나가기
-netstat  # 네트워크 정보 확인
-netstat -anp  # 모든 연결 및 소켓 정보를 숫자 형식으로 표시
-netstat -nplt  # 리스닝 중인 포트와 소켓 정보를 표시
-```
+- Worker node
+    ```
+    Port Range | Purpose            | Used By
+    --------------------------------------------------
+    10250      | Kubelet API        | Self
+    30000-32767| NodePort Services  | All
+    ```
 
 
 ### CNI (Container Networking Interface)
