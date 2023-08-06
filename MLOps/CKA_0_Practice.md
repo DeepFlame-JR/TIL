@@ -16,11 +16,15 @@ CKA_0_Practice
 - `/etc/cni/net.d`
   - CNI(Continer Network Interface) 플러그인의 구성 파일들이 위치하는 디렉토리
   - 네트워킹 관련 설정들이 이곳에 저장
+- `/opt/cni/bin`
+  - 플러그인 가능한 리스트 확인 가능
 
 ### 명령어
 ```powershell
 crictl ps # Container Runtime에 의해서 발생한 컨테이너의 상태를 확인
 scp user@remote_host:/path/to/remote/file /path/to/local/destination # Secure Copy Protocol
+
+grep -i # 대소문자 구분하지 않음
 ```
 
 ## 1. Core Concept
@@ -196,8 +200,8 @@ cni0: CNI (Container Network Interface) 인터페이스로, 컨테이너들 간�
 veth85879640@if2 및 vethee201166@if2: CNI 네트워크 인터페이스에 속하는 가상 인터페이스들로, 각각 cni0 인터페이스에 속함
 eth0@if8256 및 eth1@if8260: 호스트 노드에 있는 실제 물리 인터페이스
 
-
-ip route  # node와 관련된 route 정보 
+# node와 관련된 route 정보 
+ip route  
 # 기본 라우트. 어떤 목적지로 가는 패킷이 192.168.0.1을 통해 전송되어야 함. dev etho0는 네트워크 인터페이스
 # 노드 내부에서 사용되는 flannel 네트워크에 대한 라우트. 10.244.0.0/32 범위는 flannel.1을 통해 전송
 # 다른 네트워크의 eth1로 가는 패킷에 대한 라우트. 172.25.0.0/24 범위는 eth1를 통해 전송
@@ -227,6 +231,44 @@ tcp        0      0 192.168.1.10:22         192.168.1.20:12345      ESTABLISHED
 tcp6       0      0 :::80                   :::*                    LISTEN     
 udp        0      0 0.0.0.0:53              0.0.0.0:*                          
 udp6       0      0 :::53                   :::*    
+
+
+# 현재 실행 중인 프로세스
+ps
+-a: 모든 사용자의 프로세스
+-u <user>: 특정 user의 프로세스
+-x: 헤더를 표시하지 않음
+-e: 모든 프로세스를 표시
+-f: 전체 형식으로 프로세스 표시
+-aux: 모든 사용자의 모든 프로세스를 상세정보와 함께
+
+# CNI 정보 확인 (Path: /etc/cni/net.d/xxx)
+cat /etc/cni/net.d/10-flannel.conflist 
+{
+  "name": "cbr0",
+  "cniVersion": "0.3.1",
+  "plugins": [
+    {
+      "type": "flannel", # flannel 실행 후 
+      "delegate": {
+        "hairpinMode": true,
+        "isDefaultGateway": true
+      }
+    },
+    {
+      "type": "portmap", # portmap 실행
+      "capabilities": {
+        "portMappings": true
+      }
+    }
+  ]
+}
+
+# weave 설치
+# Installing Addons > Weave 페이지 참고
+## Watch out for 부분을 살펴볼 필요가 있음
+### kube-proxy의 configemap에서 설정 정보를 얻을 수 있음
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 
 ```
 
