@@ -193,7 +193,7 @@ Events:
 ## 6. Network
 ```yaml
 # Node Network
-ip address  # node와 연관된 network 정보 (IP, Mac Address 등)
+ip address  # node와 연관된 network/interface 정보 (IP, Mac Address 등)
 lo: loopback 인터페이스로, 자기 자신으로의 루프백(Loopback) 트래픽을 처리 (127.0.0.1/8)
 flannel.1: flannel 네트워크 인터페이스로, Kubernetes 클러스터에서 노드 간 통신을 위해 사용
 cni0: CNI (Container Network Interface) 인터페이스로, 컨테이너들 간의 통신을 처리
@@ -270,6 +270,11 @@ cat /etc/cni/net.d/10-flannel.conflist
 ### kube-proxy의 configemap에서 설정 정보를 얻을 수 있음
 kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
 
+# weave의 IP 범위 확인하기 (POD의 IP 범위)
+k logs weave-net-srw7w -n kube-system # (ipalloc-range:10.244.0.0/16)
+
+# svc IP 범위
+k describe po kube-apiserver-controlplane -n kube-system
 ```
 
 ## 7. Security
