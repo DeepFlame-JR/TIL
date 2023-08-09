@@ -44,70 +44,6 @@ LLM
     - 컴퓨터링량 (C)
 
 
-### Transformer
-- 주로 자연어 처리(Natural Language Processing, NLP) 작업에 사용되는 모델
-    - 기계 번역과 같은 시퀀스-투-시퀀스(Sequence-to-Sequence, Seq2Seq) 작업에서 성공적으로 사용
-    - RNN 기반 모델보다 훨씬 뛰어난 성능
-- 특징
-    - 어텐션 메커니즘(Attention Mechanism)
-        - 시퀀스 데이터의 길이와 관계없이 입력과 출력 간의 상호작용을 모델링
-        - 입력 시퀀스의 모든 위치에서 다른 위치로 정보를 집중(Attention)하는 방식으로 작동
-        - 각각의 단어가 다른 단어들과 상호작용하여 중요한 정보를 추출하는 능력을 가지고 있음
-    - 인코더-디코더 구조
-        - 인코더는 입력 시퀀스를 인코딩하여 중간 표현을 생성
-        - 디코더는 인코더의 출력과 이전의 출력을 이용하여 출력 시퀀스를 생성
-        - 인코더와 디코더 사이의 어텐션 레이어를 통해 입력과 출력 간의 상호의존성을 모델링
-        - Encoder의 마지막 output은 Decoder 모든 layer에 input으로 활용
-    - 셀프 어텐션(Self-Attention)
-        - 입력 시퀀스의 모든 위치에서 입력 시퀀스의 다른 위치로 정보를 전달하면서 입력 시퀀스 내의 각 워드의 관계를 모델링
-        - 현재 위치의 앞의 단어를 확인
-    - 포지션 임베딩(Positional Embedding)
-        - 입력 시퀀스의 단어들이 순서를 가지고 있는 시퀀스 데이터이므로, 단어의 순서 정보를 표현하기 위해 포지션 임베딩을 사용
-        - 모델은 단어의 상대적인 위치 정보를 학습
-
-```
- +--------------------+
- |  Input Sequence   |         +-------------+
- +---------|----------+         |    Token    |
-           |                    |   Embedding |
-           V                    +-----|-------+
- +-------------------+                |
- |    Positional     |                V
- |     Encoding      |         +-------------+
- +---------|----------+         |   Add &    |
-           |                    | Normalization|
-           V                    +-----|-------+
- +-------------------+                |
- |     Encoder       |                V
- |   (Multiple       |         +-------------+
- |   Layers)         |         | Self-Attention|
- +---------|----------+         +------|------+
-           |                           |
-           V                           V
- +-------------------+         +-------------+
- |  Encoder Output   |         |  Feed-Forward|
- +---------|----------+         |   Network   |
-           |                    +------|------+
-           V                           |
- +-------------------+                V
- |     Decoder       |         +-------------+
- |   (Multiple       |         | Add & Normal|
- |   Layers)         |         |   & Attention|
- +---------|----------+         +-------------+
-           |                           |
-           V                           V
- +-------------------+         +-------------+
- |     Decoder      o|         | Feed-Forward|
- |    Output         |         |   Network   |
- +---------|----------+         +-------------+
-           |
-           V
- +-------------------+
- |    Output Layer   |
- +-------------------+
-```
-
-
 ### Masked language model
 - 언어 모델링의 한 유형으로, 주어진 문장에서 일부 단어를 마스크하고, 마스크된 단어를 예측하는 모델
 - 동작 방식
@@ -136,6 +72,87 @@ LLM
         - is
         - interesting
         - !
+
+### seq2seq
+- 입력된 시퀀스로부터 다른 도메인의 시퀀스를 출력하는 다양한 분야에서 사용되는 모델
+    - 예. 챗봇 (입력 시퀀스와 출력 시퀀스를 각각 질문과 대답으로 구성), 번역기
+- 구조
+    - input(embedding) > Encoder > Context Vector > Decoder > output
+        - embedding: 단어를 벡터의 형태로 표시
+        - Context Vector: 인코더가 입력 문장의 모든 단어들을 순차적으로 입력받은 뒤에 마지막에 이 모든 단어 정보들을 압축해서 만든 하나의 벡터 (고차원인 모델은 해당 요소의 차원이 큼)
+        - Decoder: Context Vector를 받아서 하나씩 단어를 뱉음
+            - 1번 단어: <sos> + Context Vector
+            - 2번 단어: 1번 단어 + 첫번째 은닉 상태
+            - 3번 단어: 2번 단어 + 두번째 은닉 상태
+    - 은닉상태: 입력 시퀀스의 각 위치에서 얻은 중간 결과. 현재까지의 입력정보를 요약하는 벡터
+
+<img src="https://user-images.githubusercontent.com/40620421/258954985-f5565184-f93f-4a5f-8922-03aea9a67431.png" width="500">
+
+- 훈련
+    ```py
+    from tensorflow.keras.layers import Input, LSTM, Embedding, Dense
+    from tensorflow.keras.models import Model
+    import numpy as np
+
+    # Encoder
+    encoder_inputs = Input(shape=(None, src_vocab_size))
+    encoder_lstm = LSTM(units=256, return_state=True)
+
+    encoder_outputs, state_h, state_c = encoder_lstm(encoder_inputs)
+    # LSTM은 바닐라 RNN과는 달리 상태가 두 개. 은닉 상태와 셀 상태.
+    encoder_states = [state_h, state_c]
+
+    # Decoder
+    decoder_inputs = Input(shape=(None, tar_vocab_size))
+    decoder_lstm = LSTM(units=256, return_sequences=True, return_state=True)
+
+    # 디코더에게 인코더의 은닉 상태, 셀 상태를 전달.
+    decoder_outputs, _, _= decoder_lstm(decoder_inputs, initial_state=encoder_states)
+
+    decoder_softmax_layer = Dense(tar_vocab_size, activation='softmax')
+    decoder_outputs = decoder_softmax_layer(decoder_outputs)
+
+    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+    model.compile(optimizer="rmsprop", loss="categorical_crossentropy")
+
+    model.fit(x=[encoder_input, decoder_input], y=decoder_target, batch_size=64, epochs=40, validation_split=0.2)
+    ```
+
+
+### Attention Mechanism
+- 신경망들의 성능을 높이기 위한 매커니즘. Transformer의 기반이 됨
+    - Decoder에서 출력 단어를 예측하는 매 시점마다 Encoder의 전체 입력 문장을 다시 한번 참고
+    - 동일한 비율 X. 해당 시점에서 예측해야할 단어와 연관이 있는 입력 단어에 더 집중
+    - 기존 seq2seq의 문제점
+        1. 하나의 고정된 크기의 벡터에 모든 정보를 압축하려고 하니 정보 손실 발생
+        1. RNN의 고질적 문제인 기울기 소실 문제가 존재
+- Attention 함수
+    - Attention(Q, K, V) = Attention Value (dictionary 형태)
+        - Q(Query): t 시점의 디코더 셀에서의 은닉 상태
+        - K(Keys): 모든 시점의 인코더 셀의 은닉 상태들
+        - V(Values): 모든 시점의 인코더 셀의 은닉 상태들
+    - Query에 대해서 모든 Key와의 유사도를 각각 구함 > Value에 구한 유사도를 반영해서 리턴 
+    - Attention Score를 어떻게 구하느냐에 따라서 Attention 종류가 달라짐
+- Dot-Product Attention
+    - Decoder가 예측을 할 때, Encoder의 문장을 다시 참고 
+    - 기존에는 t-1 은닉상태와 t-1의 출력 단어를 입력받음 + 여기에 t시점의 Attention Value 추가
+    - 과정
+        1. Attention Score를 구한다
+            - 인코더의 모든 은닉 상태 각각이 디코더의 현 시점 은닉 상태와 얼마나 유사한지 판단하는 스코어 값
+            - 인코더 은닉 상태와 디코더 현 시점 은닉 상태의 내적
+        1. 소프트맥스 함수를 통해 어텐션 분포를 구한다
+            - Attention Score를 합이 1이되는 확률분포로 변환
+            - 예. 0.1, 0.4, 0.1, 0.4 가중치가 나타남
+        1. 각 인코더의 어텐션 가중치와 은닉 상태를 가중합하여 Attention Value를 구한다
+            - 각 인코더의 은닉 상태와 가중치 값들을 곱하고 더함
+            - 인코더의 문맥을 포함하고 있다고 해서, Context Vector라고도 불림
+            
+            <img src="https://user-images.githubusercontent.com/40620421/258975229-8c1ca5d0-3cac-4e7c-a6ee-7a1c6787e5dd.png">
+
+        1. Attention Value와 디코더의 t 시점의 은닉 상태를 연결한다
+    
+    <img src="https://user-images.githubusercontent.com/40620421/258955033-1f6956a3-7189-4180-afb9-46963738fee3.png" width="500">
+
 
 
 ## Training
@@ -261,3 +278,4 @@ https://velog.io/@nellcome/Instruction-Tuning%EC%9D%B4%EB%9E%80
 
 
 
+## Serving
