@@ -155,6 +155,44 @@ LLM
 
 
 
+### Transformer
+- 주로 자연어 처리(Natural Language Processing, NLP) 작업에 사용되는 모델
+    - seq2seq 모델은 입력 시퀀스를 하나의 벡터 표현으로 압축 (정보 일부 손실)
+    - 이를 해결하기 위해서 Attention Mechanism 활용
+    - 만약 Attention만으로 Encoder와 Decoder를 만든다면?
+- 구성
+    - Encoders와 Decoders로 구성
+        - Encoders: Input > Positional Encoding > Multi-head Self-Attention > Encoder Result
+        - Decoders: Input > Positional Encoding > Masked Multi-head Self-Attention > Multi-head Attention (+Encoder Result) > Dense > Softmax
+    - 포지션 인코딩(Positional Encoding)
+        - Transformer는 단어 입력을 순차적으로 받는 방식이 아니므로, 단어의 위치 정보를 다른 방식으로 알릴 필요가 있음 > Positional Encoding 사용
+        - 모델은 단어의 상대적인 위치 정보를 학습
+        - Sin, Cos 함수를 활용 (해당 position의 값이 가장 큼)
+
+<img src="https://user-images.githubusercontent.com/40620421/258854357-a67dbf69-b9f8-45ad-b63d-9e84aa2afe5e.png", width="500">
+
+
+- 어텐션 메커니즘(Attention Mechanism)
+    1. Encoder Self-Attention
+    1. Masked Decoder Self-Attention
+    1. Encoder-Decoder Attention
+- Encoder
+    - num_layers 개수의 인코더 층을 쌓음
+    - 한 개의 층은 Self_Attention의 병렬적 구조 (Multi-head Self-Attention) + Position-wise FFNN (완전 연결 FFNN) 으로 구성
+    - Self-Attention
+        - Attention을 스스로 실행 (Q, K, V가 모두 같음 / 입력 문장의 모든 단어 벡터들)
+        - The animal didn't cross the street because it was too tired. (animal, street, it이 it과 연관성이 크게 나타남)
+        - Q, K, V 벡터는 Model의 Dimension/num_heads
+            - 예. 512차원의 모델에서 num_heads가 8이면 > 벡터 크기는 64
+    - Multi-head Attention
+        - 여러 번의 Attention을 병렬로 사용하는 것이 효과적임
+
+        <img src="https://user-images.githubusercontent.com/40620421/259108859-3b5c8d99-ea5b-4368-ab31-1cb2438db3c9.png" width="500">
+
+- Decoder
+    - 첫번째 서브층: Query = Key = Value
+    - 두번째 서브층↑: Query: 디코더 행렬 / Key = Value: 인코더 행렬
+
 ## Training
 
 ### Pre-training
