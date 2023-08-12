@@ -315,5 +315,67 @@ https://velog.io/@nellcome/Instruction-Tuning%EC%9D%B4%EB%9E%80
         - 지시 사항이 포함된 대화 형식으로 모델을 학습시키면서, 지시 사항을 더 잘 이해하고 지켜지도록 학습하도록 유도
 
 
+## LLM 모델 서빙
+https://betterprogramming.pub/frameworks-for-serving-llms-60b7f7b23407
 
-## Serving
+<img src="https://user-images.githubusercontent.com/40620421/259951949-dd10e312-22ba-4883-bf67-e99b734a13ba.png" width="500">
+
+- vLLM: 속도가 가장 빠름
+- DeepSpeed-MII: Letency가 가장 적음. DeepSpeed를 기존에 사용하고 있다면 추천
+- Text Generation Inference(TGI): Hugging Face의 support 가능
+- CTranslate2: CPU를 활용해서 서빙
+- 비교 요소
+    - latency: 어떤 작업을 처리하는데 걸리는 시간
+    - throughput: 초당 처리하는 작업의 개수
+        - Toekns per Second, Query per second
+    - Quantization: 양자화 (파라미터를 lower bit으로 표현함으로써 access 속도를 높이는 기법)
+
+
+### vLLM
+- 속도가 가장 빠른 LLM 서빙 프레임워크
+- 주요 기능
+    - Continuous batching: iteration-level 스케줄링으로, 1개의 iteration에 쿼리를 쌓아서 전달. 많은 양의 쿼리를 한 번에 처리할 수 있도록 함
+    - PagedAttention (https://vllm.ai/)
+        - Input token이 key, value tensor를 만드는데, 이게 GPU 메모리를 많이 소모 (KV cache)
+            - KV cache가 GPU 메모리에 보존되며, 병목현상을 일으킴
+            - 길이에 따라 변동적이라서 많은 양의 메모리가 낭비됨
+        - key-value를 비연속적으로 적재할 수 있도록 허락함
+            - Block table을 통해서 가능하도록 함
+            - 서로 다른 Sequence들이 Memory를 공유할 수 있도록 함
+            - 더 많은 배치 가능, GPU 향상, 성능 향상
+- 장점
+    - Text Generation 속도가 빠름
+    - High-Throughput serving (parallel sampling, beam search 등의 알고리즘을 활용)
+    - OpenAI-compatible APi server
+- 한계
+    - Custom model을 서빙할 수 있지만, 과정이 복잡
+    - Adapter에 대한 지원이 부족 (LoRa, QLoRa 등)
+    - 모델 양자화를 지원하지 않음
+
+```py
+# Offline Batched Inference
+from vllm import LLM, SamplingParams
+
+prompts = [
+    "Funniest joke ever:",
+    "The capital of France is",
+    "The future of AI is",
+]
+sampling_params = SamplingParams(temperature=0.95, top_p=0.95, max_tokens=200)
+llm = LLM(model="huggyllama/llama-13b")
+outputs = llm.generate(prompts, sampling_params)
+```
+```powershell
+# API server
+# Start the server
+! python -m vllm.entrypoints.api_server --env MODEL_NAME=huggyllama/llama-13b
+
+# Query the model in shell
+curl http://localhost:8000/generate \
+    -d '{
+        "prompt": "Funniest joke ever:",
+        "n": 1,
+        "temperature": 0.95,
+        "max_tokens": 200
+    }'
+```
