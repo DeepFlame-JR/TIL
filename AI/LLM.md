@@ -361,7 +361,11 @@ prompts = [
     "The capital of France is",
     "The future of AI is",
 ]
-sampling_params = SamplingParams(temperature=0.95, top_p=0.95, max_tokens=200)
+
+# temperature: 응답의 무작위성 또는 창의성을 조절 (너무 높으면 모델이 관련 없는 응답을 생성할 수 있으며, 너무 낮으면 응답이 지나치게 로봇적일 수 있음)
+# top_k: 가장 가능성이 높은 k개의 토큰을 반영
+# top_p: 가장 가능성이 높은 최소 p개의 토큰을 반영
+sampling_params = SamplingParams(temperature=0.95, top_p=0.95, top_k=0.95, max_tokens=200)
 llm = LLM(model="huggyllama/llama-13b")
 outputs = llm.generate(prompts, sampling_params)
 ```
@@ -378,4 +382,41 @@ curl http://localhost:8000/generate \
         "temperature": 0.95,
         "max_tokens": 200
     }'
+```
+
+
+### Text Generation Inference(TGI)
+- HuggingFace에서 개발한 LLM 서빙 프레임워크
+- 주요 기능
+    - Prometheus Metrics가 내장되어 있어 성능 모니터링을 쉽게 할 수 있음
+    - flash-attention, Paged Attention을 통한 Optimized Transformer code에 추론 진행
+    - Sever-Sent Events(SSE)를 통한 Token streaming
+        - SSE: 서버에서 생성된 업데이트 스트림을 구독하고, 이벤트가 발생할 때마다 클라이언트에 알림을 보내는 단방향 통신
+        - Streaming: 답변 전체를 한번에 응답하는 것이 아니라, 답변을 나누어서 응답 (답변 생성이 오래걸린다면 이것도 하나의 방법)
+    - 
+- 이점
+    - 모든 종속성이 Docker에 의해서 설치됨 > 확실하게 작동할 수 있음을 보장
+    - HuggingFace Model Hub를 통해서 Model을 쉽게 서빙할 수 있음
+    - 양자화, tensor parallelism 등의 다양한 옵션을 활용할 수 있음
+- 한계
+    - Adapter에 대한 지원이 부족 (LoRa, QLoRa 등)
+    - Rust + CUDA kernel에서 컴파일되기 때문에 라이브러리 통합이 어려울 수 있음
+    - 문서가 부족함 (Rust 언어를 활용하기 어려움)
+
+```powershell
+# Run web server
+mkdir data
+docker run --gpus all --shm-size 1g -p 8080:80 \
+-v data:/data ghcr.io/huggingface/text-generation-inference:0.9 \
+  --model-id huggyllama/llama-13b \
+  --num-shard 1
+```
+
+```py
+# Make queries
+from text_generation import Client
+
+client = Client("http://127.0.0.1:8080")
+prompt = "Funniest joke ever:"
+print(client.generate(prompt, max_new_tokens=17 temperature=0.95).generated_text)
 ```
