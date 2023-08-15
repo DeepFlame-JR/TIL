@@ -89,34 +89,35 @@ LLM
 <img src="https://user-images.githubusercontent.com/40620421/258954985-f5565184-f93f-4a5f-8922-03aea9a67431.png" width="500">
 
 - 훈련
-    ```py
-    from tensorflow.keras.layers import Input, LSTM, Embedding, Dense
-    from tensorflow.keras.models import Model
-    import numpy as np
 
-    # Encoder
-    encoder_inputs = Input(shape=(None, src_vocab_size))
-    encoder_lstm = LSTM(units=256, return_state=True)
+```py
+from tensorflow.keras.layers import Input, LSTM, Embedding, Dense
+from tensorflow.keras.models import Model
+import numpy as np
 
-    encoder_outputs, state_h, state_c = encoder_lstm(encoder_inputs)
-    # LSTM은 바닐라 RNN과는 달리 상태가 두 개. 은닉 상태와 셀 상태.
-    encoder_states = [state_h, state_c]
+# Encoder
+encoder_inputs = Input(shape=(None, src_vocab_size))
+encoder_lstm = LSTM(units=256, return_state=True)
 
-    # Decoder
-    decoder_inputs = Input(shape=(None, tar_vocab_size))
-    decoder_lstm = LSTM(units=256, return_sequences=True, return_state=True)
+encoder_outputs, state_h, state_c = encoder_lstm(encoder_inputs)
+# LSTM은 바닐라 RNN과는 달리 상태가 두 개. 은닉 상태와 셀 상태.
+encoder_states = [state_h, state_c]
 
-    # 디코더에게 인코더의 은닉 상태, 셀 상태를 전달.
-    decoder_outputs, _, _= decoder_lstm(decoder_inputs, initial_state=encoder_states)
+# Decoder
+decoder_inputs = Input(shape=(None, tar_vocab_size))
+decoder_lstm = LSTM(units=256, return_sequences=True, return_state=True)
 
-    decoder_softmax_layer = Dense(tar_vocab_size, activation='softmax')
-    decoder_outputs = decoder_softmax_layer(decoder_outputs)
+# 디코더에게 인코더의 은닉 상태, 셀 상태를 전달.
+decoder_outputs, _, _= decoder_lstm(decoder_inputs, initial_state=encoder_states)
 
-    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
-    model.compile(optimizer="rmsprop", loss="categorical_crossentropy")
+decoder_softmax_layer = Dense(tar_vocab_size, activation='softmax')
+decoder_outputs = decoder_softmax_layer(decoder_outputs)
 
-    model.fit(x=[encoder_input, decoder_input], y=decoder_target, batch_size=64, epochs=40, validation_split=0.2)
-    ```
+model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+model.compile(optimizer="rmsprop", loss="categorical_crossentropy")
+
+model.fit(x=[encoder_input, decoder_input], y=decoder_target, batch_size=64, epochs=40, validation_split=0.2)
+```
 
 
 ### Attention Mechanism
@@ -125,7 +126,7 @@ LLM
     - 동일한 비율 X. 해당 시점에서 예측해야할 단어와 연관이 있는 입력 단어에 더 집중
     - 기존 seq2seq의 문제점
         1. 하나의 고정된 크기의 벡터에 모든 정보를 압축하려고 하니 정보 손실 발생
-        1. RNN의 고질적 문제인 기울기 소실 문제가 존재
+        1. RNN의 고질적 문제인 기울기 소실 문제가 존재 (GRU, LSTM에서도 같은 문제)
 - Attention 함수
     - Attention(Q, K, V) = Attention Value (dictionary 형태)
         - Q(Query): t 시점의 디코더 셀에서의 은닉 상태
@@ -149,9 +150,8 @@ LLM
             
             <img src="https://user-images.githubusercontent.com/40620421/258975229-8c1ca5d0-3cac-4e7c-a6ee-7a1c6787e5dd.png">
 
-        1. Attention Value와 디코더의 t 시점의 은닉 상태를 연결한다
-    
-    <img src="https://user-images.githubusercontent.com/40620421/258955033-1f6956a3-7189-4180-afb9-46963738fee3.png" width="500">
+        4. Attention Value와 디코더의 t 시점의 은닉 상태를 연결한다
+            <img src="https://user-images.githubusercontent.com/40620421/258955033-1f6956a3-7189-4180-afb9-46963738fee3.png" width="500">
 
 
 
@@ -160,17 +160,34 @@ LLM
     - seq2seq 모델은 입력 시퀀스를 하나의 벡터 표현으로 압축 (정보 일부 손실)
     - 이를 해결하기 위해서 Attention Mechanism 활용
     - 만약 Attention만으로 Encoder와 Decoder를 만든다면?
-- 구성
-    - Encoders와 Decoders로 구성
-        - Encoders: Input > Positional Encoding > Multi-head Self-Attention > Encoder Result
-        - Decoders: Input > Positional Encoding > Masked Multi-head Self-Attention > Multi-head Attention (+Encoder Result) > Dense > Softmax
-    - 포지션 인코딩(Positional Encoding)
-        - Transformer는 단어 입력을 순차적으로 받는 방식이 아니므로, 단어의 위치 정보를 다른 방식으로 알릴 필요가 있음 > Positional Encoding 사용
-        - 모델은 단어의 상대적인 위치 정보를 학습
-        - Sin, Cos 함수를 활용 (해당 position의 값이 가장 큼)
+- Encoders와 Decoders로 구성
+    - Encoders: Input > Positional Encoding > Multi-head Self-Attention > Encoder Result
+    - Decoders: Input > Positional Encoding > Masked Multi-head Self-Attention > Multi-head Attention (+Encoder Result) > Dense > Softmax
+- 핵심 요소
+    - Query, Key & Value
+        - layer의 Input 값
+        - 예시
+            - Youtube에서 검색을 한다고 했을 때,
+            - Query: 검색어
+            - Key: 결과로 나타나는 비디오의 제목
+            - Value: Key 비디오 내에 있는 콘텐츠
+        - 따라서 Query 와 유사한 Key를 찾을 필요가 있음
+            - cos 함수를 통해서 Similarity를 계산
+            - Similarity(Q, K)
+    - Positional Encoding
+        - Transformer에서는 모든 임베딩을 한번에 수행하기 때문에 빠름
+            - But, 정보 손실이 우려됨
+        - sin, cos 파동을 통해서 각 단어의 유니크한 포지션을 포함하여 임베딩
+            - 순서대로 임베딩하는 것보다 빠르면서 순서도 포함할 수 있는 형태로 임베딩하는 방법
+    - Query, Key & Value 활용
 
-<img src="https://user-images.githubusercontent.com/40620421/258854357-a67dbf69-b9f8-45ad-b63d-9e84aa2afe5e.png", width="500">
+        <img src="https://user-images.githubusercontent.com/40620421/261307871-7e751a86-2e95-4def-b228-25b2723ffcff.png" width="500">
 
+        - 왜 똑같은 Key, Value 값이 중복되서 사용되는 것일까?
+        - 우선 Query와 Key의 유사성을 찾는다 (MatMul > Scale > Softmax : Attention Filter)
+        - 유사성에다가 원래 값인 Value를 곱함 > 불필요한 값들은 희미해짐
+
+<img src="https://user-images.githubusercontent.com/40620421/258854357-a67dbf69-b9f8-45ad-b63d-9e84aa2afe5e.png" width="500">
 
 - 어텐션 메커니즘(Attention Mechanism)
     1. Encoder Self-Attention
@@ -186,9 +203,7 @@ LLM
             - 예. 512차원의 모델에서 num_heads가 8이면 > 벡터 크기는 64
     - Multi-head Attention
         - 여러 번의 Attention을 병렬로 사용하는 것이 효과적임
-
         <img src="https://user-images.githubusercontent.com/40620421/259108859-3b5c8d99-ea5b-4368-ab31-1cb2438db3c9.png" width="500">
-
 - Decoder
     - 첫번째 서브층: Query = Key = Value
     - 두번째 서브층↑: Query: 디코더 행렬 / Key = Value: 인코더 행렬
@@ -208,6 +223,11 @@ LLM
     - 전이 학습
         - 사전 훈련된 모델은 일반 언어 이해 능력을 보유하고 있기 때문에, 특정 작업에 대한 미세 조정을 통해 해당 작업에 특화된 표현과 패턴을 학습
         - 데이터 양이 적은 작업이더라도 효과적인 학습
+- 한계
+    - knowledge cutoff
+        - 훈련된 내용만 알고있음
+        - 예. 2021년까지 정보로 훈련된 모델은 2023년에 일어난 일을 모름
+    - 같은 질문에 같은 대답을 함
 
 ### Fine-tuning
 - 사전 훈련된 모델을 특정 작업에 맞게 추가로 훈련시키는 과정
@@ -220,6 +240,7 @@ LLM
     - Overfitting 방지와 일반화 능력 향상
         - 특정 작업에 초점을 맞추기 때문에, 모델이 작업 관련 데이터에 과적합되지 않도록 제어
 
+<img src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*LTfNOqZQB_M42KyvttjSyw.png" width="500">
 
 #### 예시
 BERT를 기반으로 한 감성 분석 작업
@@ -250,6 +271,14 @@ BERT를 기반으로 한 감성 분석 작업
     - Prompt modifications ("Hard" prompt tuning, "Soft" prompt tuning, Prefix-tuning)
     - Adapter methods (LLaMA-Adapter)
     - Reparameterization (LoRA / Low rank adaption)
+
+### Reinforcement Learning from Human Feedback (RLHF)
+- 사용자의 Query를 통해서 훈련을 진행
+    - 사실상 LLM의 마지막 훈련단계
+    - Simple binary cross-entropy loss를 활용해서 프로세스를 단순화할 것을 제안
+- Direct Preference Optimization (DPO)
+    - Reward Modeling step을 우회하고, 핵심 통찰력을 통해 선호도 데이터에서 언어 모델을 최적화
+    - Direct likelihood objective가 reward model을 활용하지 않도록 개선
 
 
 ## Evaluation
