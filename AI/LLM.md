@@ -284,6 +284,16 @@ BERT를 기반으로 한 감성 분석 작업
     - Direct likelihood objective가 reward model을 활용하지 않도록 개선
 
 
+### RAG (Retrieval-Augmented Generation)
+- Retrieval 기능을 LLM 텍스트 생성에 통합
+    - 대규모 자료에서 관련 문서를 가져오는 retrieval system과 답변을 생성하는 LLM을 결합
+    - 모델이 외부 정보를 조회하여 응답을 개선하도록 도움
+    - 보통 vector store를 이용 (관련 문서를 찾는 데에 도움)
+- 보통 LLM을 당장 기업에서 도입하기 가장 손쉬운 방법
+
+<img src="https://user-images.githubusercontent.com/40620421/264033743-239e52ec-17ec-4377-a33b-93d8c6dab2b8.png" width="500">
+
+
 ## Evaluation
 
 ### GLUE Benchmark
