@@ -37,6 +37,9 @@ CKA_1_Core_Concept
         - 워커 노드 간에 통신 활성화
 - Worker Node: 컨테이너를 로드, Docker 등의 런타임을 통해서 
 
+
+<img src="https://user-images.githubusercontent.com/40620421/244922843-9f6818fb-b324-4a47-b44a-d425ba7a9b49.png" width="600">
+
 ### ETCD
 - key-value 형태의 핵심 저장소
     - 빠른 읽기와 쓰기 제공
@@ -208,5 +211,3 @@ CKA_1_Core_Concept
     - Docker는 build, run, image관리 등에서 좀 더 편의성이 잘 제공되어있고, CI환경이나 kubernetes환경이 아닌 곳에서 더 편리하게 사용 가능
     - Containerd는 중간에 layer가 적어 가벼움. 제한된 리소스를 써야하는 환경이라면 좀 더 좋을 것이지만, 개발 편의성이 떨어진다.
 
-
-<img src="https://user-images.githubusercontent.com/40620421/244922843-9f6818fb-b324-4a47-b44a-d425ba7a9b49.png" width="600">

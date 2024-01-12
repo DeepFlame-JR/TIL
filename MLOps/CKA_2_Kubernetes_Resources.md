@@ -343,8 +343,8 @@ spec:
   - name: nginx
     image: nginx:stable
     ports:
-      - containerPort: 8080
-        name: http-web-svc
+    - containerPort: 8080  # 내부에서 사용하는 포트
+      name: http-web-svc
 
 ---
 apiVersion: v1
@@ -357,9 +357,9 @@ spec:
   ports:
   - name: name-of-service-port
     protocol: TCP
-    # 기본적으로 그리고 편의상 `targetPort` 는 `port` 필드와 동일한 값으로 설정된다.
     port: 80  # 외부에서 Service에 접근할 때 사용되는 포트 번호
-    targetPort: http-web-svc  # 선택한 Pod와 Service가 연결되는 포트 번호
+    targetPort: 8080  # Pod 내부의 포트
+    targetPort: http-web-svc  # 이름으로도 연결 가능
 ```
 
 ### NodePort

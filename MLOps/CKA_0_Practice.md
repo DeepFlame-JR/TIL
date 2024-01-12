@@ -275,6 +275,9 @@ k logs weave-net-srw7w -n kube-system # (ipalloc-range:10.244.0.0/16)
 
 # svc IP 범위
 k describe po kube-apiserver-controlplane -n kube-system
+
+# payroll ns의 mysql pod의 nslookup 값을 저장
+kubectl exec -it hr -- nslookup mysql.payroll > /root/CKA/nslookup.out
 ```
 
 ## 7. Security
