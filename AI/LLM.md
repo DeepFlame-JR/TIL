@@ -211,6 +211,15 @@ model.fit(x=[encoder_input, decoder_input], y=decoder_target, batch_size=64, epo
     - 첫번째 서브층: Query = Key = Value
     - 두번째 서브층↑: Query: 디코더 행렬 / Key = Value: 인코더 행렬
 
+### GPT
+- Transformer에서 Decorder만 사용   
+    - Unlabeled Dataset으로 Pretrain 
+    - Labeled Dataset으로 Finetuning
+- Decoder = Masked Self-Attention + Feed Forward Neural Network
+- GPT3
+    - 대부분 GPT2의 구조를 따르지만 attention이 변경 (sparse attention)
+    - filtering된 dataset을 사용
+
 ## Training
 
 ### Pre-training
@@ -275,6 +284,40 @@ BERT를 기반으로 한 감성 분석 작업
     - Adapter methods (LLaMA-Adapter)
     - Reparameterization (LoRA / Low rank adaption)
 
+#### Apdater를 통한 PEFT
+- Transformer의 개별 Layer에 Adapter를 적용
+    - 보통은 2개를 사용 (Upper, Low)
+    - 복잡한 구조가 아님 (급격하게 Parameter 수가 늘어나지는 않음)
+    - Adapter의 크기는 Bottleneck Layer의 크기에 의해서 결정
+    - 작은 크기의 Adapter만 삽입만 해도 GLU Benchmark를 대상으로 Full Finetuning에 근접한 성능을 획득
+- 구조
+    - Feed Forward Sublayer / Linear Transformation (N > M)
+    - Activation
+    - Feed Forward Sublayer / Linear Transformation (M > N)
+- Adpater Fusion
+    - Transformer Layer 내에서 Feed Forward Sublayer의 다음에 위치
+    - Two-Layered 구조를 기반으로 2단계 학습 수행
+        1. 개별 Task마다의 Adapter를 학습
+        1. 1단계에서 학습된 개별 Adapter들 통해 Attention 매커니즘을 이용하여 입력에 따라 1단계 Adapter 활용
+
+#### BitFit
+- Bias Term들에 대해서만 Task별로 Finetunging 수행
+    - 결과를 보았을 때, Full Finetuning과 비슷한 결과가 나타남
+
+#### LoRa (Low rank adaption)
+- LLM의 일부 Weight Matrix들에 대해서만 추가적인 학습을 허용
+- 과정
+    - 각각의 Layer 내에서 일부의 Weight Matrix에 대해 Finetuning 대상 결정
+    - Weight Matrix의 형태를 그대로 복제하여 새롭게 Finetuning 수행
+    - Low-Rank Matrix Decomposition을 수행하여 두 개의 Matrix로 구성
+        - h = Wx + W`x = Wx + BAx
+- Train mode에서는 Weight Paramter 분리 / Evaluation mode에서는 Weight Parameter가 합쳐져서 동작
+    - Query matrix, value Matrix만 사용하는 것이 가장 효율적
+
+#### AdaLora
+- LoRA 기반으로 Weight Update에 대해 Sensitivity-based importance에 따라 최적의 Weight을 Pruning을 수행하면서 Finetuning 수행
+
+
 ### Reinforcement Learning from Human Feedback (RLHF)
 - 사용자의 Query를 통해서 훈련을 진행
     - 사실상 LLM의 마지막 훈련단계
@@ -292,7 +335,6 @@ BERT를 기반으로 한 감성 분석 작업
 - 보통 LLM을 당장 기업에서 도입하기 가장 손쉬운 방법
 
 <img src="https://user-images.githubusercontent.com/40620421/264033743-239e52ec-17ec-4377-a33b-93d8c6dab2b8.png" width="500">
-
 
 ## Evaluation
 
@@ -329,6 +371,10 @@ https://velog.io/@nellcome/Instruction-Tuning%EC%9D%B4%EB%9E%80
         - 대화 시스템에서는 이전 대화 내용을 포함하여 프롬프트를 구성하는 경우가 많음
         - 이전 대화의 문맥이 현재 프롬프트에 포함
 
+#### Prompt Engineering
+- Text Summarization
+- Information Extraction
+- Text Classification
 
 ### In-Conext Learning
 - 대화식 AI 모델에서 사용되는 학습 방법 중 하나로, 모델이 대화의 문맥(context)을 고려하여 지속적으로 학습하고 개선하는 방식
@@ -355,3 +401,30 @@ https://velog.io/@nellcome/Instruction-Tuning%EC%9D%B4%EB%9E%80
         - 여러 작업에 대해 동시에 학습하면서, 특히 지시사항을 따르도록 강조하여 모델을 개선
     1. 지시 사항 강조
         - 지시 사항이 포함된 대화 형식으로 모델을 학습시키면서, 지시 사항을 더 잘 이해하고 지켜지도록 학습하도록 유도
+
+
+### Gorilla LLM
+- 자연어 쿼리에 해당하는 적절한 API 호출을 생성하는 LLM
+    - LLM이 API를 통해서 외부 도구를 호출할 수 있도록 플러그인 결합
+    - Instruction Generation: Self-Instruct
+        - synthetic instruction을 생성하기 위해 GPT-4 사용 ({instruction, API})
+        - 사람이 작성한 seed 세트를 프롬프트로 사용
+        - 품질이 낮거나 유사한 항목은 필터링하여 다시 Pool에 추가
+- 예시: "I want to see some cats dancing in celebration" > 해당 사잔의 API 주소
+
+
+
+## 모델 경량화
+- 모델의 크기를 줄이거나 계산량을 감소시켜, 모델을 더 작고 빠르게 만드는 기술
+    - 장치의 메모리나 연산능력에 맞게 최적화하여 배포, 실행 및 이식성을 향상
+    - 모바일 기기, 에지 컴퓨팅 환경, 임베디드 시스템 등에 적용할 때 특히 중요
+- 과정
+    1. Chain-of-Thought의 rationale과 label을 얻을 수 있도록 LLM을 학습
+        - Chain-of-Thought: 단순한 질문-결과로 이루어지는 것이 아니라, 중간과정에서의 Rationale과 label을 모두 포함함
+    1. LLM에서 얻은 rationale과 label로 작은 모델을 학습함
+        - 답변을 하기 전에 생각하는 방법을 작은 모델이 학습할 수 있음
+
+
+### Knowledge Distillation
+- 작은 모델은 기존의 학습 데이터뿐만 아니라, 큰 모델의 소프트 타겟(소프트맥스 출력)을 이용하여 훈련
+    - Softmax에 의한 label만 활용하는 것이 아니라, 확률 값도 활용함

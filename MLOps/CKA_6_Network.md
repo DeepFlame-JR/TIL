@@ -112,23 +112,29 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
 
 
 ### Pod Networking
-- Pod 간에 네트워킹은 어려움
-    1. Pod 내에서 인스턴스 간에 네트워킹
-    1. Pod와 Pod 간에 네트워킹
-    1. 다른 노드의 Pod와 Pod에 대한 네트워킹 
-        - 다른 노드에 네트워킹하기 위해서는 Gateway를 거쳐가야 함
-        - (노드1에서 노드2의 Pod 네트워킹) > (노드2의 Gate way) > (노드2의 Pod)
-- 해결
-    - IP 주소
-        - 각 Pod는 고유한 IP 주소를 가지며, Pod 내의 모든 컨테이너는 동일한 IP 주소를 공유
-    - 동일한 노드(호스트) 내 통신
-        - 동일한 노드에 있는 Pod는 동일한 호스트 네트워크 인터페이스를 공유 > 로컬 네트워크를 통해 직접 통신 (빠름)
-    - Pod 간 통신
-        - 다른 노드에 있는 Pod와도 통신 가능
-        - 네트워크 트래픽을 라우팅하고 로드 밸런싱하기 위한 가상 네트워크를 제공
+- 특징
+    - 각 Pod는 고유한 IP 주소를 가지며, Pod 내의 모든 컨테이너는 동일한 IP 주소를 공유
     - Service
         - Kubernetes에서는 Service를 통해 Pod에 대한 안정적인 네트워크 주소와 로드 밸런싱을 제공
         - 여러 Pod를 그룹화하여 단일 Endpoint를 제공하고, 클라이언트에서는 Service의 IP 주소를 통해 Pod에 접근
+
+1. Container to Container
+    - 여러 개의 컨데이너를 하나의 가상 네트워크 인터페이스에 할당
+    - 외부에서 컨테이너를 구별할 때는 port 번호로 구분
+    - pause 컨테이너가 각 Pod마다 존재하며 다른 컨테이너들에게 네트워크 인터페이스를 제공하는 역할
+
+<img src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*LWnaWtGo_OYilqKPZ_Zk4Q.png">
+
+2. Pod to Pod
+    - Pod 네트워킹 인터페이스로 CNI 스펙을 준수하는 네트워크 플러그인 사용
+    - Pod는 고유한 IP를 가지고 있기 때문에 서로 통신 가능함
+    - 만약 다른 노드에 있다면 Router를 거쳐서 다른 노드로 이동 
+
+<img src="https://miro.medium.com/v2/resize:fit:1100/format:webp/1*bum5JtYR0YLGdnWjWCNv3Q.png">
+
+3. Pod to Service
+    - Pod는 쉽게 대체될 수 있는 존재이기 때문에 Pod to Pod 네트워크는 내구성이 약함
+
 
 ### Service Networking
 - Service는 실존하는 Resource가 아닌 가상 객체
