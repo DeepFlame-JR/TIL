@@ -20,7 +20,7 @@ CKA_1_Core_Concept
 - Master Node: Kubernetes 관리를 담당
     - ETCD Cluster
         - 클러스터에 대한 정보를 저장 (어떤 컨테이너가 어떤 노드에 있는지 등)
-        - 어떤 컨테이너가 어떤 선박에 있는지 등의 정보를 저장
+        - 어떤 컨테이너가 어떤 노드에 있는지 등의 정보를 저장
         - Key-Value DB 
     - kube-scheduler    
         - 노드에서 애플리케이션과 컨테이너를 예약
@@ -173,8 +173,10 @@ CKA_1_Core_Concept
     - GitHub를 통한 설치 필요
 
 ### kube-proxy
+- 서버와 클라이언트 사이의 대리인
 - 파드 간의 네트워크 연결 및 로드 밸런싱을 처리하여 클러스터 내의 서비스의 안정성과 가용성을 유지
     - 기본적으로 모든 노드에서 실행됨
+    - Cluster IP가 생성되거나 Pod가 추가될 때, iptables에 룰을 추가
     - 다른 노드 간의 Pod를 연결하는 것에 도움
     - Load Balancing, Service, Pod
 - 주요 기능
