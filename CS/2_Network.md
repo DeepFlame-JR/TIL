@@ -3,7 +3,7 @@
 
 # 네트워크
 
-## 기초
+## 기본 개념
 노드와 링크가 서로 연결되어 있거나 연결되어 있지 않은 집합체
 - 노드: 서버, 라우터, 스위치
 - 링크: 유선 또는 무선  
@@ -34,9 +34,7 @@
 
 
 토폴로지 종류  
-https://cozy-dandelion.tistory.com/39
-
-<img src="https://media.istockphoto.com/vectors/network-topology-and-arrangement-of-telecommunication-structure-vector-id1221908141?s=612x612" width="300">
+<img src="https://private-user-images.githubusercontent.com/40620421/296165502-8054a793-fd4e-45a3-818c-daecbfeac267.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUwNDU5NjUsIm5iZiI6MTcwNTA0NTY2NSwicGF0aCI6Ii80MDYyMDQyMS8yOTYxNjU1MDItODA1NGE3OTMtZmQ0ZS00NWEzLTgxOGMtZGFlY2JmZWFjMjY3LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTEyVDA3NDc0NVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTBiNDc0ODgwY2IzMTcwNTRhYTYyZjk1ZGY3YWYwOGFkZWIzMGMxOGRiMTkxNTIyZmUyOGI2OTNlNzNiMWRiM2QmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.j_7lXZgWs6_A-y6TjsbZnFwqXb_hUwNmG4as3u0lbAU" width="400">
 
 1. 트리 토폴로지  
 개념: Tree구조 형태이다.  
@@ -66,12 +64,12 @@ https://cozy-dandelion.tistory.com/39
 단점: 노드 추가/삭제가 어려움. 운영/구축 비용이 많이 듬.  
   
 ## TCP/IP 4계층 모델
-- 네트워크에서 사용되는 **통신 프로토콜의 집합.**
+- 네트워크에서 사용되는 `통신 프로토콜의 집합.`
 - 호환성 보장 (다른 제조사 장비들끼리도 통신 가능), 각 계층에 대한 캡슐화와 은닉이 가능. 계층별로 문제 확인이 가능하여 쉽게 해결.
     - 캡슐화, 은닉: 캡슐 내부 로직이나 변수들을 감추고 외부에는 기능만을 제공 
 - TCP/IP 4계층 모델 또는 OSI 7계층 모델로 설명됨.
   
-<img src="https://images.velog.io/images/jehjong/post/68e38b79-1117-4d48-b7c9-e04454205daa/image.png" width="400">  
+<img src="https://private-user-images.githubusercontent.com/40620421/296165951-e868a879-14cb-41fc-88ac-2313186cfb58.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUwNDYwODIsIm5iZiI6MTcwNTA0NTc4MiwicGF0aCI6Ii80MDYyMDQyMS8yOTYxNjU5NTEtZTg2OGE4NzktMTRjYi00MWZjLTg4YWMtMjMxMzE4NmNmYjU4LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTEyVDA3NDk0MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTQzNDkxN2VmZWM1NmM5OTRjN2YwNjIxYjAyNzI5NjFiYzNlODM5MmIyM2VhNjI0ZmZhMzNiM2Y2MmEyOGU2NGImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.QzRZMzWuSB6u8kMXz0o8d216Nd9-9FIXkzeApgnZwyU" width="400">  
 
 차이점  
 1. OSI에서는 Application 계층이 3개로 쪼개져 있음.
@@ -87,7 +85,7 @@ https://cozy-dandelion.tistory.com/39
 - FTP: 장치와 장치간의 **파일을 전송**하는데 사용되는 표준 통신 프로토콜.
 - SMTP: **전자 메일 전송**을 위한 인터넷 표준 프로토콜.
 - HTTP: WWW를 위한 데이터 통신의 기초. **웹사이트**를 이용하는데 쓰는 프로토콜.
-- DNS: 도메인 이름과 IP 주소를 매필해주는 서버.
+- DNS: 도메인 이름과 IP 주소를 매핑해주는 서버.
 - SSH: 네트워크 상 다른 컴퓨터에 로그인하거나 원격 시스템에서 명령을 안전하게 실행하기 위한 암호화 네트워크 프로토콜.
 
 ### Transport 계층
@@ -100,7 +98,7 @@ TCP
 - **가상회선 패킷 교환 방식**: 패킷에 가상회선 식별자가 포함. 패킷들은 전송된 순서대로 도착하는 방식.  
 - 3-way handshake를 통한 연결 (신뢰성 확보)
 
-<img src="https://s3.ap-south-1.amazonaws.com/afteracademy-server-uploads/what-is-a-tcp-3-way-handshake-process-three-way-handshaking-establishing-connection-6a724e77ba96e241.jpg" width="500">
+<img src="https://private-user-images.githubusercontent.com/40620421/296167171-4d2d8f30-e1b1-4dfd-a288-092462e52a78.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUwNDY0MDQsIm5iZiI6MTcwNTA0NjEwNCwicGF0aCI6Ii80MDYyMDQyMS8yOTYxNjcxNzEtNGQyZDhmMzAtZTFiMS00ZGZkLWEyODgtMDkyNDYyZTUyYTc4LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTEyVDA3NTUwNFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTljYmViMGY1OWEyN2RlMWRlOTdlYmU2N2RmNGQyMDBmMzZjNzU2Njc5NWI2ZGY1NDQwNGZkODg2YmQ1YzVhMWMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.cmj2t-L9DkH4vSZv0Tul55gEE-gnYeLMnzUYhdOuFB0" width="500">
 
 1. SYN(Sychronization/요청) 단계  
 클라이언트가 서버에 임의의 시퀀스 번호(ISN)을 보냄.
@@ -111,7 +109,7 @@ TCP
 
 - 4-way handshake를 통한 연결 해제
 
-<img src="https://velog.velcdn.com/images%2Faverycode%2Fpost%2F3ec34c06-3d54-45f3-a6fb-bc5bfb415001%2F%E1%84%80%E1%85%B5%E1%84%89%E1%85%AE%E1%86%AF%E1%84%86%E1%85%A7%E1%86%AB%E1%84%8C%E1%85%A5%E1%86%B8-6%202.jpg" width="500">
+<img src="https://private-user-images.githubusercontent.com/40620421/296167527-47165c4b-5da2-430b-8b63-a51096fae092.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUwNDY1MDgsIm5iZiI6MTcwNTA0NjIwOCwicGF0aCI6Ii80MDYyMDQyMS8yOTYxNjc1MjctNDcxNjVjNGItNWRhMi00MzBiLThiNjMtYTUxMDk2ZmFlMDkyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTEyVDA3NTY0OFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTA5ZmEyOWJmNGY4YmMxYTA4YWZmY2JlM2I3NjE4YmU2NDQ0NjcyOGI4MWUxYWVhZTYwZmQ0ZWJhMTMxMGY5ZGMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.gTJR5AXHWSmbJm_5Zh-Q3gp_zp3n5VfqJzawTxgeQT0" width="500">
 
 1. 클라이언트가 연결을 닫기 위해 서버로 FIN 플래그를 보내고, FIN_WAIT_1 상태로 응답을 기다린다.
 1. 서버는 ACK라는 승인 플래그를 보낸다. 응답을 받은 클라이언트는 FIN_WAIT_2 상태가 된다.
@@ -151,26 +149,78 @@ Data > Segment > IP Packet > Frame > bit
 Internet 계층에서 IP 주소를 사용하여 데이터를 목적지로 전송한다.
 
 ### ARP (Address Resolution Protocol)
-- IP 주소에서 ARP를 통해 MAC 주소를 찾아 MAC 주소를 기반으로 통신한다.
-    - IP 주소(가상 주소) > **ARP** > MAC 주소(실제 주소)
-    - MAC 주소(실제 주소) > **RARP** > IP 주소(가상 주소)
-
-- 통신 과정에서 브로드캐스트를 통해서 IP 주소가 000.00.00.0인 장치를 찾고, 해당되는 장치가 'ARP reply 유니캐스트'를 통해 MAC 주소를 반환한다.
-    - 브로드캐스트: 송신 호스트가 연결된 모든 호스트에 데이터를 전송하는 방식
+- 보통 목표 호스트의 IP 주소는 알고있지만, 실제 전송을 위해서는 물리적인 MAC 주소가 필요함
+    - 이를 위해서 IP와 MAC 주소간의 매핑 정보를 테이블의 형태로 관리함
+        - IP 주소(가상 주소) > **ARP** > MAC 주소(실제 주소)
+        - MAC 주소(실제 주소) > **RARP** > IP 주소(가상 주소)
+- 통신 과정에서 IP 주소를 모르는 경우, 브로드캐스트를 하게되며, 목표 호스트는 이 요청을 받고, 자신의 IP와 MAC 주소를 포함한 ARP 응답을 유니캐스트를 통해 하게 됨
+    - 브로드캐스트: 호스트 A가 속한 모든 네트워크에 전달됨
     - 유니캐스트: 고유 주소로 식별된 하나의 네트워크 목적지에 1:1로 데이터를 전송하는 방식
+    
 
 ### 홉바이홉 통신
-- IP 주소를 통해 통신하는 과정
-- 통신망의 각 패킷이 여러 개의 라우터를 건너감
-    - 라우팅 테이블의 IP 기반으로 전달해나감
+- 네트워크에서 한 홉(단일 라우터 또는 스위치)를 거치면서 전송되는 통신 방식
+- 각 홉은 데이터를 다음 목적지로 전송하기 위해 최적의 경로를 선택
+    - 네트워크 상태, 트래픽 부하, 라우팅 테이블 등 고려
+    - 최적의 경로를 통해 네트워크 트래픽 관리
 
-#### 라우팅 테이블
-- 목적지 정보들과 목적지로 가기 위한 방법의 리스트
-    - 게이트웨이와 모든 목적지에 대해 거쳐야 할 다음 라우터 정보를 가짐
-- 송신지에서 수신지까지 도달하기 위해 사용
 
-#### 게이트웨이
-- 서로 다른 통신망, 프로토콜을 사용하는 네트워크 간의 통신을 가능하게 하는 관문을 두루 일컫는 용어
+#### Switch
+- 데이터 링크 계층에서 동작하는 네트워크 장비
+- 여러 개의 포트를 가지고 잇으며 이를 통해 여러 장치를 연결
+    - 스위칭 테이블을 유지하여 포트와 MAC 주소의 매핑 정보를 저장
+<img src="https://private-user-images.githubusercontent.com/40620421/296176561-8c17c6cd-8edc-44f5-bb0c-7c7fdbcf3666.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUwNDg2NDUsIm5iZiI6MTcwNTA0ODM0NSwicGF0aCI6Ii80MDYyMDQyMS8yOTYxNzY1NjEtOGMxN2M2Y2QtOGVkYy00NGY1LWJiMGMtN2M3ZmRiY2YzNjY2LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTIlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTEyVDA4MzIyNVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTlkMGFmZjc0OTFjNDM2ZjY2OTU3MmVmMzIzZTRlNzE2MjdlYTU4NjIyNjM1ZjJiYTZlMzU1ODVjZmEzMGZiZWQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.hVapaZh-HT0tEQGc50B3HhVo-UfVMNacPLNsQCwPyLA">
+
+#### Router
+- 모델 네트워크 계층에서 동작 
+    - Switch를 연결
+- IP 주소를 기반으로 패킷을 전달하는 역할
+    - 서로 다른 네트워크와 연결하는 역할 (최적의 경로를 활용)
+- 라우팅 과정
+    1. 패킷 전달: 목적지 IP 주소를 통해서 적절한 네트워크로 전달
+    1. 패킷 필터링: 네트워크 트래픽을 필터링. 불필요한 트래픽 차단
+    1. 네트워크 주소 변환(NAT): 사설 IP주소와 공인 IP 주소 간의 통신을 지원
+    1. 패킷 분할 및 조립: 큰 크기의 패킷을 작은 크기로 분할하고, 조합하여 전달
+- 라우팅 테이블
+    - 패킷을 전달할 경로를 저장한 DB
+        - 라우터나 스위치와 같은 네트워크 장비에 저장
+        - 네트워크 트래픽을 효율적으로 라우팅
+    - Column
+        - Destination IP: 목적지 IP 주소 범위
+        - Next Hop: 패킷을 전달할 다음 라우터 또는 게이트웨이의 IP 주소 (인터페이스를 통해서 Next Hop으로 감)
+        - Interface: 패킷을 전달할 다음 라우터 또는 게이트웨이의 인터페이스 (네트워크를 연결하는 물리적 또는 가상적인 연결점)
+    - 예시
+        Destination IP | Next Hop	| Interface
+        --|--|--
+        192.168.1.0/24	 | 10.0.0.1 |	eth0 (첫번째 이더넷 카드)
+        10.0.0.0/24	| 192.168.1.1 |	eth1
+        0.0.0.0/0 |	10.0.0.2 |	eth2
+- 종류
+    1. 정적 라우팅
+        - 관리자가 수동으로 경로를 정의
+        - 목적지 IP 주소 또는 서브넷과 해당 경로를 매핑하여 패킷이 목적지로 전달되는 경로를 결정
+        - 단순하고 예측 가능하지만, 네트워크 변화에 대응하기 어렵고 유연성이 제한적
+    1. 동적 라우팅
+        - 동적 라우팅은 네트워크 프로토콜을 사용하여 경로 정보를 자동으로 교환하고 업데이트
+        - 동적 라우팅 프로토콜을 사용하여 경로 정보를 교환하고 네트워크의 변화에 따라 최적의 경로를 선택
+        - 프로토콜 종류: OSPF (Open Shortest Path First), BGP (Border Gateway Protocol) 등
+        - 네트워크의 유연성과 확장성을 향상시키며, 장애 복구 및 로드 밸런싱에도 유용합니다.
+    1. 로드 밸런싱
+        - 여러 대상 서버 또는 서비스 사이에서 트래픽을 분산
+        - 서버의 가용성을 모니터링하고 필요에 따라 트래픽을 다른 서버로 전달하여 부하 분산
+
+<img src="https://user-images.githubusercontent.com/40620421/246644470-8c9cd0f3-6776-455b-9f11-98d170493404.png" width="500">
+
+#### Gateway
+- 서로 다른 네트워크 간의 통신을 가능하게 하는 장치
+    - 네트워크의 입구 역할
+    - 프로토콜 변환, 주소 변환 등을 통해 다른 네트워크로 전달될 수 있도록 함
+- Gateway
+    - A (192.168.1.5) <> B (192.168.1.6/192.168.2.6) <> C (192.168.2.5)
+    - A에서 C에 접근하려고 해도 안 됨 > B를 통해서 가야함
+    - `ip route add 192.168.2.0/24 via 192.168.1.6` 명령을 통해서 게이트웨이에 등록
+    - A에서 C 접근 시에 B로 갔다가 C로 가게 됨
+
 
 ### IP 주소 체계
 1. IPv4
@@ -195,6 +245,25 @@ Internet 계층에서 IP 주소를 사용하여 데이터를 목적지로 전송
     - 공인 IP의 개수는 한계가 있기 때문
 - 내부 네트워크의 IP를 노출하지 않아 보안에 좋음
 - 여러 명이 동시에 접근할 때 속도가 느려질 수 있음
+- 예시 (wifi)
+    - 여러 대의 컴퓨터와 스마트폰이 연결되어 있고, 이는 각각 192.168.1.2, 192.168.1.3 등의 사설 IP를 가지고 있음
+    - 사설 IP 주소 > 라우터 > NAT 변환 > 공인 IP주소 > 외부 서버 응답 > 역변환 > 사설 IP로 전달
+
+
+### DNS (Domain Name System)
+- 인터넷에서 도메인 이름과 IP 주소를 매핑하는 시스템
+    - 예: www.example.com > 192.0.2.1 (반대도 가능)
+    - /etc/hosts > `192.0.2.1   www.example.com`
+    - /etc/resolv.conf > `nameserver 8.8.8.8` (windows의 경우, DNS서버 연결하는 설정이 있음)
+- 구성 요소 (계층적 구조)
+    - DNS 클라이언트
+        - DNS 정보를 요청하는 시스템이며, 주로 사용자의 컴퓨터 또는 네트워크 장비
+        - 도메인 이름을 IP 주소로 변환하거나 역으로 IP 주소를 도메인 이름으로 변환하기 위해 DNS 서버에 쿼리를 보냄
+    - DNS 서버
+        - DNS 정보를 저장하고 관리하는 서버 (서버마다 너무 많은 DNS를 가지고 있음)
+        - DNS 서버는 도메인 이름과 해당 도메인의 IP 주소를 포함하는 DNS 레코드를 저장하고, 클라이언트의 DNS 쿼리에 응답
+    - DNS 캐시 서버
+        - DNS 캐시 서버는 이전에 요청한 DNS 정보를 일정 기간 동안 캐시에 저장하여 반복적인 쿼리의 응답 시간을 단축
 
 ## HTTP
 애플리케이션 계층으로서 웹서비스 통신에 이용됨  
