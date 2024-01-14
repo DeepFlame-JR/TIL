@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_37 TILs and counting..._
+_40 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
-- [DL](AI/DL.md) - Wed Jul 26 23:16:44 2023 +0900
-- [CKA_0_Practice](MLOps/CKA_0_Practice.md) - Tue Jul 25 21:48:57 2023 +0900
+- [2023_NAVER_DAN23](Conference/2023_NAVER_DAN23.md) - Thu Aug 24 20:12:51 2023 +0900
+- [LLMOps](MLOps/LLMOps.md) - Sat Aug 19 13:59:58 2023 +0900
 
 ### Categories
 
@@ -58,6 +58,7 @@ _37 TILs and counting..._
 - [2022_WOOWACON_아키텍처](Conference/2022_WOOWACON_아키텍처.md)
 - [2022_WOOWACON_아키텍처_이벤트](Conference/2022_WOOWACON_아키텍처_이벤트.md)
 - [2023_MLOps_Community_Meetup](Conference/2023_MLOps_Community_Meetup.md)
+- [2023_NAVER_DAN23](Conference/2023_NAVER_DAN23.md)
 - [2023_모두의연구소_글로벌_MLOps트렌드](Conference/2023_모두의연구소_글로벌_MLOps트렌드.md)
 
 ### [MLOps](#MLOps)
@@ -68,9 +69,11 @@ _37 TILs and counting..._
 - [CKA_4_Operation_in_Kubernetes](MLOps/CKA_4_Operation_in_Kubernetes.md)
 - [CKA_5_Storage](MLOps/CKA_5_Storage.md)
 - [CKA_6_Network](MLOps/CKA_6_Network.md)
+- [CKA_7_Security](MLOps/CKA_7_Security.md)
 - [Docker](MLOps/Docker.md)
 - [Helm](MLOps/Helm.md)
 - [Kubeflow](MLOps/Kubeflow.md)
+- [LLMOps](MLOps/LLMOps.md)
 - [MLOps](MLOps/MLOps.md)
 - [MLflow](MLOps/MLflow.md)
 

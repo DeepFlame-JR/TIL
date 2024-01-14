@@ -59,6 +59,11 @@ spec:
         - Delete
             - PV이 삭제되거나 PVC와의 바인딩이 해제되면 PV와 그 내용이 자동으로 삭제
             - PV를 재사용하지 않고 삭제할 때 사용
+- 상태
+    - Available: PV이 새로 생성되었고 아직 클레임에 바인딩되지 않은 상태
+    - Bound: PV이 클레임에 바인딩되어 사용 중인 상태. PV이 클레임과 매핑되었으므로 해당 클레임으로부터 PV에 액세스할 수 없음
+    - Released: PV이 클레임과의 바인딩이 해제된 상태. 클레임이 삭제되었을 때 PV과 바인딩이 해제되며, 이후 다른 클레임에 바인딩할 수 있도록 다시 Available 상태로 돌아감.
+
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -84,7 +89,7 @@ spec:
     - 만약 가능한 PV가 없는 경우, PVC는 보류 상태로 유지됨
         - 용량이 필요한 만큼 없음
         - accessmode가 다름
-- Pod에서 사용 중이라면 삭제할 수 없음
+- Pod에서 사용 중이라면 삭제할 수 없음 (Terminating 상태)
 - 옵션
     - accessModes
         - ReadWriteOnce: PVC를 사용하는 단일 노드에서 동시에 읽고 쓸 수 음
@@ -129,3 +134,77 @@ spec:
 - 독립성
     - PV와 PVC의 분리는 Pod과 스토리지 자원 사이의 독립성을 제공 
     - 만약 PV에 바로 연결한다면 Pod는 같은 클러스터 내 너무 많은 데이터를 공유함
+
+
+
+### Storage Class
+- PersistentVolume을 동적으로 프로비저닝하는 방법을 정의하는 리소스
+  - 러스터의 스토리지 관리를 편리하게 해주고, PVC를 통해 사용자가 스토리지 리소스를 요청할 때 유연하게 스토리지를 프로비저닝하는 기능을 제공
+  - 다양한 스토리지 프로비저너(플러그인)와 연결
+- 개념/특징
+  - 프로비저너(Provisioner)
+    - 스토리지 클래스는 스토리지 프로비저너를 지정
+    - PersistentVolume을 동적으로 생성하고 관리하는데 사용되는 스토리지 플러그인을 의미
+    - AWS의 Elastic Block Store(EBS)나 Google Cloud의 Persistent Disk 등
+  - 볼륨 프로비저닝
+    - 스토리지 클래스를 사용하여 PersistentVolumeClaim(PVC)을 생성하면, 해당 스토리지 클래스가 정의한 프로비저너를 사용하여 PVC에 대응하는 PersistentVolume을 동적으로 프로비저닝
+  - 매개 변수화(Parameters)
+    - 스토리지 클래스는 프로비저너에게 전달되는 매개 변수를 정의할 수 있음
+    - 스토리지 프로비저너에 따라 다르며, 스토리지 클래스를 사용하여 스토리지를 프로비저닝할 때 이러한 매개 변수들을 제공
+  - 동적 프로비저닝(Dynamic Provisioning)
+    - 스토리지 클래스를 사용하면 PVC와 바인딩되는 PV를 미리 정의하고 생성할 필요 없이, PVC를 생성할 때 스토리지 클래스를 지정하면 해당 클래스가 정의한 프로비저너를 사용하여 PV를 동적으로 프로비저닝
+- Provisional의 종류
+  - kubernetes.io/aws-ebs
+  - kubernetes.io/gce-pd (Persistence Disk)
+  - kubernetes.io/azure-disk
+  - kubernetes.io/nfs (NFS(Network File System))
+  - kubernetes.io/local
+  - kubernetes.io/no-provisioner (Provisioner 없음)
+
+```yaml
+# Storage Calass 정의
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-storage
+provisioner: kubernetes.io/nfs
+parameters:
+  nfs.server: 192.168.1.100   # NFS 서버 IP 주소
+  nfs.path: /exports/data     # NFS 서버 내의 디렉토리 경로
+
+# PVC 정의
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  storageClassName: nfs-storage   # 위에서 정의한 StorageClass 이름
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi   # 요청하는 스토리지 용량
+
+# POD 정의
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+spec:
+  containers:
+    - name: my-container
+      image: nginx
+      volumeMounts:
+        - name: my-pvc-volume
+          mountPath: /usr/share/nginx/html
+  volumes:
+    - name: my-pvc-volume
+      persistentVolumeClaim:
+        claimName: my-pvc   # 위에서 생성한 PVC 이름
+```
+
+
+
+
+
+
