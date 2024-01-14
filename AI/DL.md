@@ -2,6 +2,11 @@ DL
 
 # Deep Learning Techniques
 
+### Learning Rate
+- LambdaLR: epoch에 따라서 지수함수를 따르면 lr이 줄어듬
+- StepLR: Step마다 Learning Rate가 줄어듬
+- CosineAnnealingLR: Cosine 함수를 따라서 주기성을 가지고 LR을 조정함
+- ReduceLROnPlateau: patience epoch이 더 이상 개선되지 않을 때 learning rate를 감소
 
 ### Activations
 - 인공신경망에서 뉴런의 출력을 결정하는 함수로, 입력 신호의 총 합을 계산하여 어떤 출력을 생성할지를 결정하는 역할
@@ -55,8 +60,6 @@ DL
     - 미니 배치 크기에 의존하지 않음: 레이어 정규화는 미니 배치 크기에 영향을 받지 않기 때문에 작은 미니 배치 크기로도 잘 동작
     - 학습 속도: 레이어 정규화는 학습 속도가 빨라집니다. 배치 정규화와 달리 학습 단계에서 평균과 분산을 구하는 연산이 필요 없기 때문에 더 빠른 학습이 가능
     - 특정 시퀀스 데이터에 적합: 레이어 정규화는 각 층의 입력을 정규화하기 때문에, 시퀀스 데이터 처리에 적합
-
-
 
 ### Residual Connection
 - 네트워크의 일부를 건너뛰어 보다 깊은 네트워크를 구성하는 데에 사용
