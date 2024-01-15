@@ -2,23 +2,21 @@ CKA_6_Network
 
 # Network
 
-## Prerequisite
- 
-### Docker Network
-- 도커 컨테이너 간의 통신을 위한 가상 네트워크 환경을 구성하는 기능
-    - 가상 네트워크 상에서 독립적인 IP 주소를 가지며, 도커 내부에서 자동으로 DNS 이름 해결도 제공
-- 특징
-    - 가상 네트워크: 각 네트워크는 독립적인 IP 주소 범위와 네트워크 설정을 가지며, 컨테이너 간의 통신 가능
-    - 내부 및 외부 통신: 컨테이너는 같은 네트워크에 속한 다른 컨테이너와 내부 통신. 또한, 호스트 시스템이나 다른 네트워크에 있는 컨테이너와도 외부 통신 가능
-    - 다양한 네트워크 드라이버: bridge, overlay, macvlan, host 등의 네트워크 드라이버를 제공   
+## Docker Network (선수지식)
+- 도커는 가상 네트워크 환경을 구성함
+    - 각 컨테이는 내부 IP를 순차적으로 할당받음
+    - 이는 재시작할 때마다 변경될 수 있음
+    - 컨테이너는 같은 네트워크에 속한 다른 컨테이너와 내부 통신 가능
+    - 호스트 시스템이나 다른 네트워크에 컨테이너와도 외부 통신 가능
 - 종류
     1. bridge 네트워크
         - 기본적으로 Docker에서 사용하는 네트워크
         - 컨테이너 간에 가상의 스위치로 연결하여 통신
         - DNS 서비스를 통해 컨테이너 이름으로 서로 통신할 수 있음
+        - 컨테이너를 생성하면 디폴트로 bridge 네트워크로 연결됨
     1. host 네트워크
         - 호스트의 네트워크 인터페이스를 컨테이너와 공유
-        - 컨테이너는 호스트와 동일한 네트워크를 가짐
+        - 호스트의 네트워크를 사용하기 때문에 포트포워딩이 필요 없음
     1. overlay 네트워크
         - 여러 호스트에 걸쳐 컨테이너를 연결하는 가상의 네트워크
         - 여러 호스트에서 컨테이너 간에 통신 가능
@@ -53,28 +51,27 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
 
 
 ### CNI (Container Networking Interface)
-- 컨테이너 오케스트레이션 시스템(예: Kubernetes, Docker)에서 컨테이너와 네트워크를 연결하기 위한 표준 인터페이스
-    - Network를 생성하기 위해서 실행되는 프로세스는 docker, kubernetes 등 거의 모든 플랫폼에서 동일하다 > 표준 인터페이스로 구성
+- 컨테이너 오케스트레이션 시스템(예: Kubernetes, Docker)에서 컨테이너간의 네트워크를 연결하기 위한 표준 인터페이스
+    - 컨테이너 런타임과 오케스트레이터 사이의 네트워크 계층을 구현하는 방식이 다양하게 분리되어 각자의 방식으로 발전하는 것을 방지
+    - K8s에서는 Pod 간의 통신을 위해 CNI 사용
+        - kubenet이라는 자체적인 CNI가 제공되지만, 3rd-party 플러그인이 주로 사용됨
     - 컨테이너를 생성하고 관리하는 도구와 네트워크 플러그인 사이의 통신을 가능하게 함
-- 개념
-    - CNI 플러그인
-        - 다양한 네트워크 플러그인을 지원
-        - 각 컨테이너에 IP 주소를 할당하고 네트워크 설정을 구성하는 역할을 수행
-        - 컨테이너를 가상 네트워크에 연결하거나, VLAN 태그를 설정하거나, 네트워크 정책을 적용하는 등의 작업을 수행
-    - CNI 구성 파일
-        - CNI 플러그인은 CNI 구성 파일을 통해 동작을 정의 (네트워크 구성과 관련된 정보가 포함)
-        - 컨테이너를 생성할 때 CNI 플러그인에게 전달
-    - CNI 호출
-        - CNI 플러그인을 호출하여 네트워크 연결을 수행
-        - 컨테이너 생성 시, 해당 컨테이너에 대한 CNI 구성 파일이 CNI 플러그인에 전달되고, 플러그인은 네트워크 설정을 적용합니다.
+- CNI의 필요성
+    1. 파드 간에 통신을 하기 위해서는 네트워크 주소와 게이트웨이 주소 간의 매핑 관계를 routing table로 일일히 정의해야함
+    1. UI Container > Login Container로 요청을 보냄
+        - K8s는 멀티 호스트로 구성되어 있어 둘 다 172.17.0.2 
+        - 이런 컨테이너끼리 통신하기 위해 반드시 CNI가 설치되어야 함
+<img src="https://private-user-images.githubusercontent.com/40620421/296568883-d47476cd-819a-4380-933e-eb16d0957a64.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUyNDU4NzAsIm5iZiI6MTcwNTI0NTU3MCwicGF0aCI6Ii80MDYyMDQyMS8yOTY1Njg4ODMtZDQ3NDc2Y2QtODE5YS00MzgwLTkzM2UtZWIxNmQwOTU3YTY0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTE0VDE1MTkzMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWY2YzBhNDQzZTEyYWNmYjRiYjM0Y2I5M2FkZDFiNDIzMGJiNjkxYjU0NDE4NzFlY2EzNDJmNzk1N2I4MDg1ZWUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.NVA7u_e6YuzpRchB23CKxKjl_rtMi5zELAcUGuruFBQ">
+        - CNI가 브릿지 인터페이스를 만들고 컨테이너 네트워크 대역대를 나누어 주며, 라우팅 테이블까지 생성 
+<img src="https://private-user-images.githubusercontent.com/40620421/296569630-7304175b-33c8-4f6e-8a55-e07c7c638c32.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUyNDU5ODAsIm5iZiI6MTcwNTI0NTY4MCwicGF0aCI6Ii80MDYyMDQyMS8yOTY1Njk2MzAtNzMwNDE3NWItMzNjOC00ZjZlLThhNTUtZTA3YzdjNjM4YzMyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTE0VDE1MjEyMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTljMmVhOWVjODQ2ODM2ZWFjNDVjNTVhNDU1ZjUzNjI1NWJmMmU2OTdmYjhmY2EyZjk5ZjU3YzRjOTcxMDZmM2EmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.RlzkYJwCaDGJv8WnLpISMw1JoPuYT5NnoQJgnCLVT28">
 
 #### CNI weave
 - 컨테이너 네트워크 인터페이스 (CNI) 플러그인으로 사용되는 솔루션 중 하나
     - 기존에 IP 주소를 통한 통신을 비효율적
         - Pod > Node > Service > Node > Pod
-    - 각 노드에 `peer`라는 에이전트 배포
-        - 클러스터 내의 POD 및 IP 정보를 알고있음
-        - 각 노드에 Weave Bridge를 구축하고, IP 주소를 할당
+- 각 노드에 `peer`라는 에이전트 배포
+    - 클러스터 내의 POD 및 IP 정보를 알고있음
+    - 각 노드에 Weave Bridge를 구축하고, IP 주소를 할당
     - IP가 중복되지 않도록 테이블을 통한 관리
         ```
         IP	Status	Pod
@@ -94,8 +91,6 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
             - weave 범위는 `weave POD`, `ip route` 등을 통해서 확인가능
     - 스케일링 및 확장성
         - 새로운 노드가 추가되거나 노드가 제거될 때 Weave는 네트워크 설정을 자동으로 조정하여 새로운 노드와 기존 노드 간의 연결을 유지
-    - 간편한 배포
-        - Kubernetes 클러스터의 각 노드에 Weave 플러그인을 설치하면 자동으로 네트워크가 구성되며, 컨테이너 간의 통신이 가능
 - 컨테이너 간 통신
     1. 클러스터 내 컨테이너 생성
         - 클러스터에는 여러 노드(Node1, Node2, Node3)가 존재
@@ -136,10 +131,14 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
     - Pod는 쉽게 대체될 수 있는 존재이기 때문에 Pod to Pod 네트워크는 내구성이 약함
 
 
-### Service Networking
+## Service Networking
 - Service는 실존하는 Resource가 아닌 가상 객체
     - CPU, MEM을 사용하지도 않음
     - Node에 종속되지도 않음
+- Pod 네트워크 접근성을 제공하기 위함 (안정성과 가용성을 향상)
+    - 클러스터 외부로부터 요청을 받을 수 있도록 함
+    - 동일한 레이블 셀렉터를 가진 Pod들의 그룹을 캡슐화하여 추상화 (단일 지점으로 많은 Pod를 동작시킬 수 있음)
+- 종류는 ClusterIP > NodePort > LoadBalancer가 있는데, 모두 중첩기능으로 설계되어, 각 단계에 더해지는 형태
 - Service 생성
     - 각 Node의 Kube-proxy에 Forwarding rule을 저장한다
     ```
@@ -147,6 +146,200 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
     서비스 IP | 서비스에 속한 Pod의 IP
     ```
     - 서비스 IP를 요청받으면 Pod로 네트워킹 됨
+- 주요 기능
+    - 고정된 IP 주소 (DNS 시스템 / etcd를 통해서 도메인 관리)
+    - 로드 밸런싱 (여러 개 파드가 있는 경우, 요청을 분산)
+    - 서비스 디스커버리 (DNS 이름 또는 IP 주소를 사용하여 애플리케이션 파드 접근)
+
+#### ClusterIP
+- 가장 기본이 되는 Service 타입, 클러스터 내부 통신만 가능
+- Service가 관리하는 Pod들에게 로드밸런싱
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app.kubernetes.io/name: proxy
+spec:
+  containers:
+  - name: nginx
+    image: nginx:stable
+    ports:
+    - containerPort: 8080  # 내부에서 사용하는 포트
+      name: http-web-svc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  selector:  # label이 'app.kubernetes.io/name: proxy'를 가진 Pod를 대상으로함
+    app.kubernetes.io/name: proxy
+  ports:
+  - name: name-of-service-port
+    protocol: TCP
+    port: 80  # 외부에서 Service에 접근할 때 사용되는 포트 번호
+    targetPort: 8080  # Pod 내부의 포트
+    targetPort: http-web-svc  # 이름으로도 연결 가능
+```
+
+- 다른 네임스페이스 또는 클러스터에 존재하는 Pod와 네트워크 연결을 위해 서비스-서비스 간의 연결을 해야하는 상황도 있음
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: myapp-service  # 연결할 서비스와 동일한 name을 메타데이터로 입력
+subsets:  # 해당 서비스로 가리킬 endpoint를 명시
+  - addresses:
+      - ip: 192.0.2.42
+    ports:
+      - port: 9376
+```
+
+
+#### NodePort
+- 클러스터 내부 및 외부 통신이 가능
+- 노드 포트를 사용함 (30000-32767)
+    - 모든 노드의 특정 포트를 사용함
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: MyApp
+  ports:
+    - port: 80  # 서비스 노출 포드
+      targetPort: 80  # Pod에서 노출하는 포트
+      # 선택적 필드 (명시하지 않은 경우 사용 가능한 포트를 자동으로 할당)
+      # 기본적으로 그리고 편의상 쿠버네티스 컨트롤 플레인은 포트 범위에서 할당한다(기본값: 30000-32767)
+      nodePort: 30007  # 만약 30007 포트가 사용 중이라면 실패
+```
+
+#### LoadBalancer
+- 서비스를 생성함과 동시에 로드밸런서를 새롭게 생성해 Pod와 연결
+    - LoadBalancer > Service > Pod
+    - LoadBalancer > Random Node > 해당 노드 or 다른 노드의 Pod
+- 기본적으로 외부에 존재하여 외부 트래픽을 받는 역할
+    - 외부에 존재하기 때문에 클라우드 사용시에 가격 부담이 있을 수 있음
+- 도메인 이름과 IP를 할당받아, 좀 더 쉽게 Pod에 접근할 수 있음
+    - 도메인 이름이 설정되어야 함 (온프레미스에서는 별도 작업 필요)
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80				# 서비스를 노출하는 포트
+      targetPort: 80		# 애플리케이션(파드)를 노출하는 포트
+  clusterIP: 10.0.171.239	# 클러스터 IP
+  selector:
+    app: myapp
+    type: frontend
+status:
+  loadBalancer:				# 프로비저닝된 로드 밸런서 정보
+    ingress:
+    - ip: 192.0.2.127
+```
+
+#### ExternalName
+- 클러스터 내부에서 외부 도메인 이름을 사용하기 위해 사용
+- 클러스터에서 `my-external-service`를 사용하여 외부 도메인에 접근할 수 있음
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-external-service
+spec:
+  type: ExternalName
+  externalName: example.com
+```
+
+
+
+### Ingress
+- 하나의 URL을 통해서 트래픽을 받고, 정의한 규칙에 따라 적절한 pod에 전달됨
+    - 만약 Ingress가 정의 되지 않는다면, 각 deployment에 서비스를 하나씩 연결해야 함
+    - IP:port로 접근하는 방식에서 벗어남
+    - 트래픽의 분산, 가상 호스트, 경로 기반 라우팅, SSL/TLS 암호화 등 다양한 기능을 제공
+- 예시
+    ```yaml
+    apiVersion: networking.k8s.io/v1
+    kind: Ingress
+    metadata:
+        name: my-ingress
+    spec:
+    rules:
+        - host: example.com
+        http:
+            paths:
+            - path: /service1  # example/service1은 service1로 전달
+                pathType: Prefix
+                backend:
+                service:
+                    name: service1
+                    port:
+                    number: 80
+            - path: /service2  # example/service2는 service2로 전달
+                pathType: Prefix
+                backend:
+                service:
+                    name: service2
+                    port:
+                    number: 80
+    ```
+- 클라이언트 요청 처리 순서
+    ```
+        +--------------+
+        | Load Balancer| <외부
+        +--------------+
+                |
+    ------------|------------
+                v
+        +--------------+
+        |   Ingress    | <내부
+        +--------------+
+                |
+                |
+                v
+        +--------------+
+        |  Kube Proxy  |
+        +--------------+
+                |
+                |
+                v
+        +--------------+
+        |   Pod(s)     |
+        +--------------+
+
+    ```
+
+#### Ingress Controller
+- 쿠버네티스에서 공식적으로 개발하는 Nginx 웹 서버 인그레스 컨트롤러
+    - 이 외에도 Kong, GKE 등의 솔루션이 있음
+- Nginx 인그레스 컨트롤러를 구성하면 자동으로 LoadBalancer 타입의 서비스가 생성됨
+
 
 ### DNS in Kubernetes
 - DNS 이름을 IP 주소로 해석하고, 서비스 및 Pod 간의 통신을 가능하게 함
@@ -189,74 +382,4 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
     |  my-pod             |     default       |  10.32.1.5         |   Pod             |    app=my-app      |
     |  your-pod           |     default       |  10.32.1.10        |   Pod             |    app=your-app    |
     +---------------------+-------------------+-------------------+-------------------+-------------------+
-    ```
-
-### Ingress
-- 클러스터 내부 또는 외부에서 애플리케이션에 접근하기 위한 진입점을 제공하는 리소스
-    - IP:port로 접근하는 방식에서 벗어남
-    - HTTP 및 HTTPS 트래픽을 관리하며, 클라이언트의 요청을 서비스로 전달하는 역할을 수행
-    - 트래픽의 분산, 가상 호스트, 경로 기반 라우팅, SSL/TLS 암호화 등 다양한 기능을 제공
-- 특징
-    - 외부 노출
-        - Ingress는 클러스터 외부에 있는 로드 밸런서나 인그레스 컨트롤러를 통해 클러스터 내부의 서비스를 외부로 노출
-        - 클라이언트는 특정 도메인 이름 또는 경로를 사용하여 서비스에 접근
-    - 가상 호스트
-        - Ingress는 가상 호스트를 지원하여 동일한 IP 주소 및 포트에서 다수의 도메인 이름을 사용하여 다른 서비스에 접근
-        - 예를 들어, example.com 및 api.example.com 도메인을 사용하여 각각 다른 서비스에 접근
-    - 경로 기반 라우팅
-        - Ingress는 경로 기반 라우팅을 지원하여 특정 URL 경로를 사용하여 서비스로 요청을 전달
-        - 이를 통해 서로 다른 경로에 대해 다른 서비스로 트래픽을 분배
-    - SSL/TLS 지원
-        - SSL/TLS 암호화를 지원하여 애플리케이션의 보안을 강화
-        - 인그레스 컨트롤러가 SSL/TLS 인증서를 관리하고 암호화된 트래픽을 업스트림 서비스로 전달
-- 예시
-    ```yaml
-    apiVersion: networking.k8s.io/v1
-    kind: Ingress
-    metadata:
-        name: my-ingress
-    spec:
-    rules:
-        - host: example.com
-        http:
-            paths:
-            - path: /service1  # example/service1은 service1로 전달
-                pathType: Prefix
-                backend:
-                service:
-                    name: service1
-                    port:
-                    number: 80
-            - path: /service2  # example/service2는 service2로 전달
-                pathType: Prefix
-                backend:
-                service:
-                    name: service2
-                    port:
-                    number: 80
-    ```
-- 클라이언트 요청 처리 순서
-    ```
-        +--------------+
-        |   Ingress    |
-        +--------------+
-                |
-                |
-                v
-        +--------------+
-        | Load Balancer|
-        +--------------+
-                |
-                |
-                v
-        +--------------+
-        |  Kube Proxy  |
-        +--------------+
-                |
-                |
-                v
-        +--------------+
-        |   Pod(s)     |
-        +--------------+
-
     ```
