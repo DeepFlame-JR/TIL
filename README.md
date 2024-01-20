@@ -4,14 +4,14 @@
 🏄‍♂️ 오늘 배운 것을 정리합니다.  
 
 
-_40 TILs and counting..._
+_41 TILs and counting..._
 
 ---
 
 ### 2 most recent TILs
 
+- [KServe](MLOps/KServe.md) - Sat Jan 20 22:45:33 2024 +0900
 - [2023_NAVER_DAN23](Conference/2023_NAVER_DAN23.md) - Thu Aug 24 20:12:51 2023 +0900
-- [LLMOps](MLOps/LLMOps.md) - Sat Aug 19 13:59:58 2023 +0900
 
 ### Categories
 
@@ -72,6 +72,7 @@ _40 TILs and counting..._
 - [CKA_7_Security](MLOps/CKA_7_Security.md)
 - [Docker](MLOps/Docker.md)
 - [Helm](MLOps/Helm.md)
+- [KServe](MLOps/KServe.md)
 - [Kubeflow](MLOps/Kubeflow.md)
 - [LLMOps](MLOps/LLMOps.md)
 - [MLOps](MLOps/MLOps.md)
