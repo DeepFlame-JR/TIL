@@ -19,13 +19,19 @@ CKA_0_Practice
 - `/opt/cni/bin`
   - 플러그인 가능한 리스트 확인 가능
 
-### 명령어
-```powershell
-crictl ps # Container Runtime에 의해서 발생한 컨테이너의 상태를 확인
-scp user@remote_host:/path/to/remote/file /path/to/local/destination # Secure Copy Protocol
 
-grep -i # 대소문자 구분하지 않음
-```
+### Trouble Shooting
+- Application Failure
+  1. `curl http://ip:port`
+  1. `k describe svc web-service`
+      - Service의 selector와 pod의 label이 일치하는지 확인
+- Control Plane
+  1. status 확인 `service <service-name> status`
+      - kube-apiserver, kube-controller-manager, kube-scheduler, kubelet, kube-proxy
+  1. API 서버 로그
+      - sudo journalctl -u kube-apiserver
+
+
 
 ## 1. Core Concept
 
@@ -35,8 +41,6 @@ kubectl api-resources
 
 kubectl apply -f <pod-definition.yaml>
 kubectl replace --force -f <pod-definition.yaml>  # edit 후에 적용이 안 된 /tmp/ 파일 대상
-
-kubectl get po my-pod -o yaml > my-pod.yaml
 
 # k create: 리소스 생성 명령어
 kubectl create pod my-pod --image=my-container-image
@@ -55,14 +59,13 @@ kubectl set replicas deployment/my-deployment --replicas=3
 ```
 
 ## 2. Scheduling
-
 ```yaml
-# kube system의 POD 확인
-k get po -n kube-system
-
 # nodeName 수동 설정
 spec:
   nodeName: my-node
+# Scheduler 설정
+spec:
+  schedulerName: my-scheduler
 
 # selector 확인
 kubectl get pods --selector env=prod,bu=finance,tier=frontend
@@ -70,9 +73,6 @@ kubectl get pods --selector env=prod,bu=finance,tier=frontend
 # Node에서 taint 추가/제거
 kubectl taint nodes node1 key1=value1:NoSchedule
 kubectl taint nodes node1 key1=value1:NoSchedule-
-
-# static pod 현황 확인 (보통 kube-system에 생성됨)
-kubectl get pods -o wide -A
 
 # static pod 생성
 # restart=never: StaticPod가 종료된 후 다시 시작되지 않음
@@ -84,21 +84,8 @@ kubectl run --restart=Never --image=busybox static-busybox --dry-run=client -o y
 # 다른 노드에 있는 static pod 경로
 ssh node01
 vi /var/lib/kubelet/config.yaml # static pod 경로 확인
-
-# Scheduler 설정
-spec:
-  schedulerName: my-scheduler
 ```
 
-## 3. Logging & Monitoring
-
-```powershell
-# 리소스 사용량 확인
-k top node
-k top pod
-
-k logs <pod-name>
-```
 
 ## 4. Application Lifecycle Management
 
@@ -264,20 +251,9 @@ cat /etc/cni/net.d/10-flannel.conflist
   ]
 }
 
-# weave 설치
-# Installing Addons > Weave 페이지 참고
-## Watch out for 부분을 살펴볼 필요가 있음
-### kube-proxy의 configemap에서 설정 정보를 얻을 수 있음
-kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
-
-# weave의 IP 범위 확인하기 (POD의 IP 범위)
-k logs weave-net-srw7w -n kube-system # (ipalloc-range:10.244.0.0/16)
-
-# svc IP 범위
-k describe po kube-apiserver-controlplane -n kube-system
-
-# payroll ns의 mysql pod의 nslookup 값을 저장
-kubectl exec -it hr -- nslookup mysql.payroll > /root/CKA/nslookup.out
+# Ingress
+k get ingress -A  # HOST 정보 확인
+k get ingress <name> -o yaml # 만약 path가 정의된 것이 없으면 no service로 감 (404 에러 페이지)
 ```
 
 ## 7. Security
