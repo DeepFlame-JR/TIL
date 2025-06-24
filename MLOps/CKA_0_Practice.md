@@ -33,7 +33,7 @@ CKA_0_Practice
 
 
 
-## 1. Core Concept
+## 2. Core Concept
 
 ```powershell
 # 약어 확인
@@ -58,7 +58,7 @@ kubectl set image deployment/my-deployment my-container=my-new-container-image
 kubectl set replicas deployment/my-deployment --replicas=3
 ```
 
-## 2. Scheduling
+## 3. Scheduling
 ```yaml
 # nodeName 수동 설정
 spec:
@@ -87,7 +87,7 @@ vi /var/lib/kubelet/config.yaml # static pod 경로 확인
 ```
 
 
-## 4. Application Lifecycle Management
+## 5. Application Lifecycle Management
 
 ```yaml
 # 롤링업데이트
@@ -118,28 +118,38 @@ kubectl create secret generic my-secret --from-literal=username=myuser --from-li
             name: my-secret
         - configMapRef:
             name: my-configmap
+```
 
+
+## 6. Cluster Maintenance
+- 노드 활성화/비활성화
+```bash
+(https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/)
 k drain node-1  # 노드를 의도적으로 비움 (replicaset이 아닌 pod가 있으면 에러)
 k cordon node-1  # 노드를 예약 불가능 상태로 만듬
 k uncordon node-1  # 노드 재부팅 (새로운 Pod부터 예약됨)
 ```
 
-``` yaml
+- 업그레이드 시에 control-plan 노드부터 업그레이드되는데, 기존에 떠 있는 pod들은 계속 접근 가능
+```bash
 # K8s 버전 업그레이드
-apt-get update
-apt-get install kubeadm=1.27.0-00
-apt-get install kubelet=1.27.0-00 
-systemctl daemon-reload
-systemctl restart kubelet
+(https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/#upgrading-control-plane-nodes)
 
-kubeadm upgrade plan  # 업그레이드 버전 확인
+# kubeadm/kubectl 업그레이드
+sudo apt update
+sudo apt-cache madison kubeadm
 
-k cordon controlplane 
-kubeadm upgrade apply v1.27.0  # 마스터노드 업그레이드
+# 업그레이드 버전 확인
+kubeadm upgrade plan 
+
+k drain/cordon controlplane 
+kubeadm upgrade apply v1.xx.x  # 마스터노드 업그레이드
 
 ssh node01
 kubeadm upgrade node
+```
 
+```bash
 # etcd 환경변수
 # 이 URL을 통해 클라이언트는 etcd 서버에 접속하여 데이터를 조회하거나 변경
 --listen-client-urls=https://127.0.0.1:2379,https://192.14.117.9:2379
@@ -167,17 +177,34 @@ k config view # cluster 현황 확인
 k config use-context cluster1 # cluster 이동
 ```
 
-## 5. Storage
+
+
+
+## 7. Security
 ```yaml
-# PVC가 Pending 상태
-# PVC를 활용한 POD가 아직 생성되지 않았기 때문에
-Events:
-  Type    Reason                Age                From                         Message
-  ----    ------                ----               ----                         -------
-  Normal  WaitForFirstConsumer  11s (x3 over 28s)  persistentvolume-controller  waiting for first consumer to be created before binding
+/etc/kubernetes/manifests/kube-apiserver.yaml
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+      <content-hidden>
+    image: k8s.gcr.io/kube-apiserver-amd64:v1.11.3
+    name: kube-apiserver
+    volumeMounts:
+    - mountPath: /tmp/users
+      name: usr-details
+      readOnly: true
+  volumes:
+  - hostPath:
+      path: /tmp/users
+      type: DirectoryOrCreate
+    name: usr-details
+
+curl -v -k https://localhost:6443/api/v1/pods -u "user1:password123"
 ```
 
-## 6. Network
+
+## 9. Network
 ```yaml
 # Node Network
 ip address  # node와 연관된 network/interface 정보 (IP, Mac Address 등)
@@ -254,27 +281,4 @@ cat /etc/cni/net.d/10-flannel.conflist
 # Ingress
 k get ingress -A  # HOST 정보 확인
 k get ingress <name> -o yaml # 만약 path가 정의된 것이 없으면 no service로 감 (404 에러 페이지)
-```
-
-## 7. Security
-```yaml
-/etc/kubernetes/manifests/kube-apiserver.yaml
-spec:
-  containers:
-  - command:
-    - kube-apiserver
-      <content-hidden>
-    image: k8s.gcr.io/kube-apiserver-amd64:v1.11.3
-    name: kube-apiserver
-    volumeMounts:
-    - mountPath: /tmp/users
-      name: usr-details
-      readOnly: true
-  volumes:
-  - hostPath:
-      path: /tmp/users
-      type: DirectoryOrCreate
-    name: usr-details
-
-curl -v -k https://localhost:6443/api/v1/pods -u "user1:password123"
 ```
