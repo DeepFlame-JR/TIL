@@ -152,3 +152,46 @@ Kubernetes는 **독자적인 PKI(Public Key Infrastructure)**를 구성하여 �
 - kube-apiserver는 특별히 두 개의 클라이언트 인증서를 보유합니다
     - apiserver-kubelet-client.crt: Kubernetes CA에서 발급
     - apiserver-etcd-client.crt: ETCD CA에서 발급
+
+
+### CA 서버
+- Master 서버가 CA 서버 역할을 함
+    - Controller Manager가 전체 프로세스 관장
+        - `/etc/kubernetes/manifests/kube-controller-manager.yaml` 에서 스펙 관리
+    - 내장 인증서가 있어 이를 활용
+        1. CertificateSigningRequest Object 생성
+            - https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/
+            - https://kubernetes.io/docs/tasks/tls/certificate-issue-client-csr/
+        1. Request 확인 `k get csr`
+        1. Request 승인 `k certificate approve <certificate-signing-request-name>`
+        1. 유저에게 certs 공유 (status에 certificate 값을 공유 / base64 -d 필요)
+
+### Kubeconfig
+
+#### kubeconfig 파일의 구성 요소
+- **clusters**: Kubernetes API 서버의 주소, CA 인증서 등 클러스터 정보 목록
+- **users**: 클러스터에 접근하기 위한 사용자 인증 정보(클라이언트 인증서, 키, 토큰 등)
+- **contexts**: 특정 클러스터와 사용자의 조합 및 네임스페이스를 지정하는 작업 환경 정보
+
+```yaml
+apiVersion: v1
+kind: Config
+clusters:
+  - name: kubernetes
+    cluster:
+      server: https://kube-apiserver:6443
+      certificate-authority: /etc/kubernetes/pki/ca.crt
+      certificate-authority-data: -----BEGINE CERTIFICATE -----  # 이런식으로도 지정 가능
+users:
+  - name: kubernetes-admin
+    user:
+      client-certificate: /etc/kubernetes/pki/admin.crt
+      client-key: /etc/kubernetes/pki/admin.key
+contexts:
+  - name: admin-context
+    context:
+      cluster: kubernetes
+      user: kubernetes-admin
+      namespace: default
+current-context: admin-context
+```

@@ -176,28 +176,54 @@ k config use-context cluster1 # cluster 이동
 ```
 
 ## 7. Security
+- CA 교체
 ```bash
-# kube-apiserver 스펙 업데이트 방법
-vi /etc/kubernetes/manifests/kube-apiserver.yaml
+https://kubernetes.io/docs/tasks/administer-cluster/certificates/
 
-spec:
-  containers:
-  - command:
-    - kube-apiserver
-      <content-hidden>
-    image: k8s.gcr.io/kube-apiserver-amd64:v1.11.3
-    name: kube-apiserver
-    volumeMounts:
-    - mountPath: /tmp/users
-      name: usr-details
-      readOnly: true
-  volumes:
-  - hostPath:
-      path: /tmp/users
-      type: DirectoryOrCreate
-    name: usr-details
+# ${MASTER_IP} = /CN=kube-admin/O=system:masters
+openssl genrsa -out ca.key 2048
+openssl req -x509 -new -nodes -key ca.key -subj "/CN=kube-admin/O=system:masters" -out ca.crt
+```
 
-curl -v -k https://localhost:6443/api/v1/pods -u "user1:password123"
+- CA 스펙 확인
+```bash
+$ openssl x509 -in /etc/kubernetes/pki/apiserver.crt -text -noout
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 3392553705033807428 (0x2f14c59ec5f9b644)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN = kubernetes  # 인증서 발급자 정보
+        Validity
+            Not Before: Jun 26 13:22:39 2025 GMT
+            Not After : Jun 26 13:27:39 2026 GMT
+        Subject: CN = kube-apiserver # 인증서 소유자 정보
+```
+
+- k8s 통신 디버깅 디버깅
+```bash
+# apiserver 로그를 먼저 확인하고, 그 후 문제를 조치한다
+docker ps -a
+docker logs <container-id>
+
+cd /etc/kubernetes/pki/etcd
+vi /etc/kubernetes/manifests/etcd.yaml
+
+# crictl (CRI 호환 컨테이너 커맨드라인 인터페이스)
+crictl ps -a
+crictl logs <container-id>
+
+# etcd가 --trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt 이기에
+# kube-apiserver도 --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt 이어야 한다.
+```
+
+- CertificateSigningRequest (csr)
+```bash
+# https://kubernetes.io/docs/tasks/tls/certificate-issue-client-csr/
+
+cat akshay.csr | base64 -w 0
+
+k certificate approve akshay
 ```
 
 
