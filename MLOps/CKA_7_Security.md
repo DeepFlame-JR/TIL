@@ -195,3 +195,103 @@ contexts:
       namespace: default
 current-context: admin-context
 ```
+
+### ServiceAccount
+Kubernetes 클러스터 내에서 실행되는 Pod와 같은 애플리케이션이 Kubernetes API 서버와 안전하게 통신할 수 있도록 인증 및 권한을 제공하는 Kubernetes 리소스
+
+#### 주요 특징
+- **대상**: *사람*이 아닌, 클러스터 내부에서 동작하는 프로세스(주로 Pod)에 대한 식별자
+- **인증 방식**: ServiceAccount는 주로 토큰 기반 인증 사용. 이 토큰은 Pod 내부에 자동으로 마운트되어, Pod가 API 서버에 접근할 때 사용됨
+    ```yaml
+    volumes:
+    - name: kube-api-access-q5zjt
+        projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+    ```
+- **권한 관리**: RBAC(Role-Based Access Control)과 연동하여, 각 ServiceAccount에 필요한 권한만 부여할 수 있음. (RoleBinding 또는 ClusterRoleBinding)
+- **라이프사이클 관리**: ServiceAccount와 연관된 토큰 및 Secret은 컨트롤러가 자동으로 생성·관리하며, 네임스페이스 생성 시 기본 ServiceAccount도 함께 생성됨
+
+
+### Network Policy
+- 쿠버네티스 클러스터 내에서 Pod 간의 네트워크 트래픽을 제어하는 보안 메커니즘
+    - 방화벽과 유사한 역할
+- 기본적으로 쿠버네티스 클러스터에서는 **모든 Pod가 서로 통신할 수 있는 "All Allow" 정책**이 적용
+    - Network Policy를 적용하면 이러한 기본 동작을 변경하여 특정 조건을 만족하는 트래픽만 허용
+- Network Policy는 **CNI(Container Network Interface) 플러그인에 의해 구현**되므로, 사용 중인 CNI가 Network Policy를 지원해야 가능
+
+#### 주요 특징
+- **화이트리스트 방식**: Network Policy는 화이트리스트 방식으로 작동하여, 명시적으로 허용된 트래픽만 통과시키고 나머지는 모두 차단
+- **네임스페이스 단위 리소스**: Network Policy는 네임스페이스 범위 리소스로, 각 네임스페이스별로 생성되며 해당 네임스페이스 내의 Pod에만 적용
+- **정책 합산 적용**: 하나의 Pod에 여러 개의 Network Policy가 적용될 수 있으며, 이 경우 모든 정책이 합산되어 적용
+
+#### Ingress와 Egress 트래픽 제어
+- Ingress 트래픽: Pod로 **들어오는 트래픽**을 의미
+- Egress 트래픽: Pod에서 **나가는 트래픽**을 의미
+
+#### Network Policy 트래픽 제어 유형
+```yaml
+# podSelector
+podSelector:
+  matchLabels:
+    role: frontend
+
+# namespaceSelector
+namespaceSelector:
+  matchLabels:
+    name: dev
+
+# ipBlock
+ipBlock:
+  cidr: 192.168.1.0/24
+  except:
+    - 192.168.1.100/32
+```
+
+#### 기본 구조
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: policy-name
+  namespace: target-namespace
+spec:
+  podSelector:
+    matchLabels:
+      app: target-app
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: allowed-app
+      ports:
+        - protocol: TCP
+          port: 80
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+      ports:
+        - protocol: TCP
+          port: 443
+```
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+```
+

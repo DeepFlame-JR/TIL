@@ -226,6 +226,12 @@ cat akshay.csr | base64 -w 0
 k certificate approve akshay
 ```
 
+- Role Checking
+```bash
+# https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access
+kubectl auth can-i list secrets --namespace dev --as dave
+```
+
 
 ## 9. Network
 ```yaml
