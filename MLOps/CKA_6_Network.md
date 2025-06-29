@@ -30,83 +30,10 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
 ```
 
 ## Cluster Node Networking
-- Control plane
-    ```
-    Port Range | Purpose                   | Used By
-    --------------------------------------------------
-    6443       | Kubernetes API server     | All
-    2379-2380  | etcd server client API    | kube-apiserver, etcd
-    10250      | Kubelet API               | Self, Control plane
-    10259      | kube-scheduler            | Self
-    10257      | kube-controller-manager   | Self
-    ```
+https://kubernetes.io/docs/concepts/cluster-administration/networking/#how-to-implement-the-kubernetes-networking-model
 
-- Worker node
-    ```
-    Port Range | Purpose            | Used By
-    --------------------------------------------------
-    10250      | Kubelet API        | Self
-    30000-32767| NodePort Services  | All
-    ```
+<img src="https://kubernetes.io/docs/images/kubernetes-cluster-network.svg">
 
-
-### CNI (Container Networking Interface)
-- 컨테이너 오케스트레이션 시스템(예: Kubernetes, Docker)에서 컨테이너간의 네트워크를 연결하기 위한 표준 인터페이스
-    - 컨테이너 런타임과 오케스트레이터 사이의 네트워크 계층을 구현하는 방식이 다양하게 분리되어 각자의 방식으로 발전하는 것을 방지
-    - K8s에서는 Pod 간의 통신을 위해 CNI 사용
-        - kubenet이라는 자체적인 CNI가 제공되지만, 3rd-party 플러그인이 주로 사용됨
-    - 컨테이너를 생성하고 관리하는 도구와 네트워크 플러그인 사이의 통신을 가능하게 함
-- CNI의 필요성
-    1. 파드 간에 통신을 하기 위해서는 네트워크 주소와 게이트웨이 주소 간의 매핑 관계를 routing table로 일일히 정의해야함
-    1. UI Container > Login Container로 요청을 보냄
-        - K8s는 멀티 호스트로 구성되어 있어 둘 다 172.17.0.2 
-        - 이런 컨테이너끼리 통신하기 위해 반드시 CNI가 설치되어야 함
-<img src="https://private-user-images.githubusercontent.com/40620421/296568883-d47476cd-819a-4380-933e-eb16d0957a64.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUyNDU4NzAsIm5iZiI6MTcwNTI0NTU3MCwicGF0aCI6Ii80MDYyMDQyMS8yOTY1Njg4ODMtZDQ3NDc2Y2QtODE5YS00MzgwLTkzM2UtZWIxNmQwOTU3YTY0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTE0VDE1MTkzMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWY2YzBhNDQzZTEyYWNmYjRiYjM0Y2I5M2FkZDFiNDIzMGJiNjkxYjU0NDE4NzFlY2EzNDJmNzk1N2I4MDg1ZWUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.NVA7u_e6YuzpRchB23CKxKjl_rtMi5zELAcUGuruFBQ">
-        - CNI가 브릿지 인터페이스를 만들고 컨테이너 네트워크 대역대를 나누어 주며, 라우팅 테이블까지 생성 
-<img src="https://private-user-images.githubusercontent.com/40620421/296569630-7304175b-33c8-4f6e-8a55-e07c7c638c32.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDUyNDU5ODAsIm5iZiI6MTcwNTI0NTY4MCwicGF0aCI6Ii80MDYyMDQyMS8yOTY1Njk2MzAtNzMwNDE3NWItMzNjOC00ZjZlLThhNTUtZTA3YzdjNjM4YzMyLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDAxMTQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwMTE0VDE1MjEyMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTljMmVhOWVjODQ2ODM2ZWFjNDVjNTVhNDU1ZjUzNjI1NWJmMmU2OTdmYjhmY2EyZjk5ZjU3YzRjOTcxMDZmM2EmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.RlzkYJwCaDGJv8WnLpISMw1JoPuYT5NnoQJgnCLVT28">
-
-#### CNI weave
-- 컨테이너 네트워크 인터페이스 (CNI) 플러그인으로 사용되는 솔루션 중 하나
-    - 기존에 IP 주소를 통한 통신을 비효율적
-        - Pod > Node > Service > Node > Pod
-- 각 노드에 `peer`라는 에이전트 배포
-    - 클러스터 내의 POD 및 IP 정보를 알고있음
-    - 각 노드에 Weave Bridge를 구축하고, IP 주소를 할당
-    - IP가 중복되지 않도록 테이블을 통한 관리
-        ```
-        IP	Status	Pod
-        10.32.0.1	Assigned	pod-1
-        10.32.0.2	Assigned	pod-2
-        10.32.0.3	Available	-
-        10.32.0.4	Assigned	pod-3
-        10.32.0.5	Available	-
-        ```
-- 특징
-    - 가상 네트워크
-        - Kubernetes 클러스터 내의 모든 노드와 컨테이너 간의 통신을 위한 네트워크를 구성
-        - 이 가상 네트워크는 컨테이너에게 고유한 IP 주소를 할당하고, 서로 간의 통신을 가능
-    - 네트워크 연결성
-        - Kubernetes 클러스터 내에서 여러 노드 간의 연결성을 제공
-        - 다른 노드에 위치한 컨테이너 간의 통신은 Weave를 통해 라우팅되며, 클러스터의 크기에 관계없이 네트워크 연결성을 확보
-            - weave 범위는 `weave POD`, `ip route` 등을 통해서 확인가능
-    - 스케일링 및 확장성
-        - 새로운 노드가 추가되거나 노드가 제거될 때 Weave는 네트워크 설정을 자동으로 조정하여 새로운 노드와 기존 노드 간의 연결을 유지
-- 컨테이너 간 통신
-    1. 클러스터 내 컨테이너 생성
-        - 클러스터에는 여러 노드(Node1, Node2, Node3)가 존재
-        - 각 노드에는 여러 개의 컨테이너(Pod)가 실행 중
-        - Weave는 각 노드에 설치되어 컨테이너 간의 네트워크 통신을 관리
-    1. Weave 가상 네트워크 구성
-        - Weave는 각 노드에 가상 네트워크 인터페이스를 생성
-        - 각 컨테이너는 가상 네트워크 인터페이스에 연결되며, 고유한 IP 주소를 할당 받음
-    1. 컨테이너 간 통신
-        - 컨테이너 A가 컨테이너 B에게 통신을 요청
-        - Weave는 송신 컨테이너 A의 IP 주소와 포트 정보를 확인 & 목적지 컨테이너 B의 IP 주소를 알고 있으므로 통신을 위해 패킷을 전달
-        - 패킷은 Weave의 가상 네트워크를 통해 목적지 컨테이너 B에 도달
-        - 목적지 컨테이너 B는 패킷을 받아들이고, 필요한 작업을 수행한 후 응답을 송신 컨테이너 A에게 반환
-
-
-### Pod Networking
 - 특징
     - 각 Pod는 고유한 IP 주소를 가지며, Pod 내의 모든 컨테이너는 동일한 IP 주소를 공유
     - Service
@@ -117,21 +44,16 @@ docker exec container1 curl container2  # container1이 container2에게 HTTP �
     - 여러 개의 컨데이너를 하나의 가상 네트워크 인터페이스에 할당
     - 외부에서 컨테이너를 구별할 때는 port 번호로 구분
     - pause 컨테이너가 각 Pod마다 존재하며 다른 컨테이너들에게 네트워크 인터페이스를 제공하는 역할
-
-<img src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*LWnaWtGo_OYilqKPZ_Zk4Q.png">
-
 2. Pod to Pod
     - Pod 네트워킹 인터페이스로 CNI 스펙을 준수하는 네트워크 플러그인 사용
     - Pod는 고유한 IP를 가지고 있기 때문에 서로 통신 가능함
     - 만약 다른 노드에 있다면 Router를 거쳐서 다른 노드로 이동 
-
-<img src="https://miro.medium.com/v2/resize:fit:1100/format:webp/1*bum5JtYR0YLGdnWjWCNv3Q.png">
-
 3. Pod to Service
     - Pod는 쉽게 대체될 수 있는 존재이기 때문에 Pod to Pod 네트워크는 내구성이 약함
 
 
-## Service Networking
+### Service Networking
+https://kubernetes.io/docs/concepts/services-networking/service/
 - Service는 실존하는 Resource가 아닌 가상 객체
     - CPU, MEM을 사용하지도 않음
     - Node에 종속되지도 않음
@@ -276,8 +198,6 @@ spec:
   externalName: example.com
 ```
 
-
-
 ### Ingress
 - 하나의 URL을 통해서 트래픽을 받고, 정의한 규칙에 따라 적절한 pod에 전달됨
     - 만약 Ingress가 정의 되지 않는다면, 각 deployment에 서비스를 하나씩 연결해야 함
@@ -288,7 +208,12 @@ spec:
     apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
-        name: my-ingress
+      annotations:
+        # Ingress로 들어온 요청의 경로를 백엔드 서비스에 보낼 때 /로 바꿔서 보내라
+        # Service로 보낼 때 항상 / 경로 처리하기 위해서 사용
+        nginx.ingress.kubernetes.io/rewrite-target: /
+        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      name: my-ingress
     spec:
     rules:
         - host: example.com
@@ -300,14 +225,14 @@ spec:
                 service:
                     name: service1
                     port:
-                    number: 80
+                        number: 80
             - path: /service2  # example/service2는 service2로 전달
                 pathType: Prefix
                 backend:
                 service:
                     name: service2
                     port:
-                    number: 80
+                        number: 80
     ```
 - 클라이언트 요청 처리 순서
     ```
@@ -369,17 +294,58 @@ spec:
         command: ["my-application"]
         args: ["--service-host=my-service.default.svc.cluster.local"]
     ```
-- 테이블
-    ```
-    +---------------------+-------------------+-------------------+-------------------+-------------------+
-    |       DNS Name      |    Namespace      |     IP Address     |   Service Type    |     Annotations    |
-    +---------------------+-------------------+-------------------+-------------------+-------------------+
-    |  my-service         |     default       |  10.32.0.5         |   ClusterIP       |    -               |
-    |  my-service         |     namespace1    |  10.32.0.10        |   ClusterIP       |    -               |
-    |  my-service         |     namespace2    |  10.32.0.15        |   ClusterIP       |    -               |
-    |  backend-service    |     default       |  10.32.0.20        |   ClusterIP       |    -               |
-    |  frontend-service   |     default       |  10.32.0.25        |   ClusterIP       |    -               |
-    |  my-pod             |     default       |  10.32.1.5         |   Pod             |    app=my-app      |
-    |  your-pod           |     default       |  10.32.1.10        |   Pod             |    app=your-app    |
-    +---------------------+-------------------+-------------------+-------------------+-------------------+
-    ```
+
+
+### CNI (Container Networking Interface)
+https://kubernetes.io/docs/concepts/cluster-administration/addons/
+- 컨테이너 오케스트레이션 시스템(예: Kubernetes, Docker)에서 컨테이너간의 네트워크를 연결하기 위한 표준 인터페이스
+    - 컨테이너 런타임과 오케스트레이터 사이의 네트워크 계층을 구현하는 방식이 다양하게 분리되어 각자의 방식으로 발전하는 것을 방지
+    - K8s에서는 Pod 간의 통신을 위해 CNI 사용
+        - kubenet이라는 자체적인 CNI가 제공되지만, 3rd-party 플러그인이 주로 사용됨
+    - 컨테이너를 생성하고 관리하는 도구와 네트워크 플러그인 사이의 통신을 가능하게 함
+- CNI의 필요성
+    1. 파드 간에 통신을 하기 위해서는 네트워크 주소와 게이트웨이 주소 간의 매핑 관계를 routing table로 일일히 정의해야함
+    1. UI Container > Login Container로 요청을 보냄
+        - K8s는 멀티 호스트로 구성되어 있어 둘 다 172.17.0.2 
+        - 이런 컨테이너끼리 통신하기 위해 반드시 CNI가 설치되어야 함
+        - CNI가 브릿지 인터페이스를 만들고 컨테이너 네트워크 대역대를 나누어 주며, 라우팅 테이블까지 생성 
+
+#### CNI weave
+- 컨테이너 네트워크 인터페이스 (CNI) 플러그인으로 사용되는 솔루션 중 하나
+    - 기존에 IP 주소를 통한 통신을 비효율적
+        - Pod > Node > Service > Node > Pod
+- 각 노드에 `peer`라는 에이전트 배포
+    - 클러스터 내의 POD 및 IP 정보를 알고있음
+    - 각 노드에 Weave Bridge를 구축하고, IP 주소를 할당
+    - IP가 중복되지 않도록 테이블을 통한 관리
+        ```
+        IP	Status	Pod
+        10.32.0.1	Assigned	pod-1
+        10.32.0.2	Assigned	pod-2
+        10.32.0.3	Available	-
+        10.32.0.4	Assigned	pod-3
+        10.32.0.5	Available	-
+        ```
+- 특징
+    - 가상 네트워크
+        - Kubernetes 클러스터 내의 모든 노드와 컨테이너 간의 통신을 위한 네트워크를 구성
+        - 이 가상 네트워크는 컨테이너에게 고유한 IP 주소를 할당하고, 서로 간의 통신을 가능
+    - 네트워크 연결성
+        - Kubernetes 클러스터 내에서 여러 노드 간의 연결성을 제공
+        - 다른 노드에 위치한 컨테이너 간의 통신은 Weave를 통해 라우팅되며, 클러스터의 크기에 관계없이 네트워크 연결성을 확보
+            - weave 범위는 `weave POD`, `ip route` 등을 통해서 확인가능
+    - 스케일링 및 확장성
+        - 새로운 노드가 추가되거나 노드가 제거될 때 Weave는 네트워크 설정을 자동으로 조정하여 새로운 노드와 기존 노드 간의 연결을 유지
+- 컨테이너 간 통신
+    1. 클러스터 내 컨테이너 생성
+        - 클러스터에는 여러 노드(Node1, Node2, Node3)가 존재
+        - 각 노드에는 여러 개의 컨테이너(Pod)가 실행 중
+        - Weave는 각 노드에 설치되어 컨테이너 간의 네트워크 통신을 관리
+    1. Weave 가상 네트워크 구성
+        - Weave는 각 노드에 가상 네트워크 인터페이스를 생성
+        - 각 컨테이너는 가상 네트워크 인터페이스에 연결되며, 고유한 IP 주소를 할당 받음
+    1. 컨테이너 간 통신
+        - 컨테이너 A가 컨테이너 B에게 통신을 요청
+        - Weave는 송신 컨테이너 A의 IP 주소와 포트 정보를 확인 & 목적지 컨테이너 B의 IP 주소를 알고 있으므로 통신을 위해 패킷을 전달
+        - 패킷은 Weave의 가상 네트워크를 통해 목적지 컨테이너 B에 도달
+        - 목적지 컨테이너 B는 패킷을 받아들이고, 필요한 작업을 수행한 후 응답을 송신 컨테이너 A에게 반환
