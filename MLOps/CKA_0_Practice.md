@@ -292,3 +292,57 @@ https://learn.kodekloud.com/user/courses/udemy-labs-certified-kubernetes-adminis
 
 https://docs.tigera.io/calico/latest/getting-started/kubernetes/self-managed-onprem/onpremises
 ```
+
+
+## 11. Install K8s with kubeadm
+1. container runtime 설정
+https://v1-32.docs.kubernetes.io/docs/setup/production-environment/container-runtimes/
+
+```bash
+# sysctl params required by setup, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.ipv4.ip_forward = 1
+EOF
+
+# Apply sysctl params without reboot
+sudo sysctl --system
+```
+
+2. kubelet kubeadm kubectl 설치
+https://v1-32.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+3. ControllerNode initializer
+https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/
+```bash
+kubeadm init --apiserver-advertise-address=<ip add 에서 etho0의 값> 
+kubeadm init --apiserver-advertise-address=192.168.183.205 --apiserver-cert-extra-sans=controlplane --pod-network-cidr=172.17.0.0/16 --service-cidr=172.20.0.0/16
+```
+
+4. kubeconfig 설정
+```bash
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+5. Worker Node에 설정
+```bash
+ssh node01
+kubeadm join 192.168.183.205:6443 --token ccd9i6.a09xzbykkpkyuuhd \
+        --discovery-token-ca-cert-hash sha256:05571bcee1e16cd267d676ed3ea9483f9e6a6038392c2aacd9b2a1d7430e1ea2
+```
+
+6. CNI 설치
+```bash
+# podCidr 확인
+sudo cat /etc/kubernetes/manifests/kube-controller-manager.yaml | grep -i cluster-cidr
+
+# 설치
+kubectl create ns kube-flannel
+kubectl label --overwrite ns kube-flannel pod-security.kubernetes.io/enforce=privileged
+
+helm repo add flannel https://flannel-io.github.io/flannel/
+helm install flannel --set podCidr="172.17.0.0/16" --namespace kube-flannel flannel/flannel
+
+# deamonset args에 "- --iface=eth0" 추가
+```

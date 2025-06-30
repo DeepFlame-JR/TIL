@@ -215,24 +215,24 @@ spec:
         nginx.ingress.kubernetes.io/ssl-redirect: "false"
       name: my-ingress
     spec:
-    rules:
-        - host: example.com
+      rules:
+      - host: example.com
         http:
-            paths:
-            - path: /service1  # example/service1은 service1로 전달
-                pathType: Prefix
-                backend:
-                service:
-                    name: service1
-                    port:
-                        number: 80
-            - path: /service2  # example/service2는 service2로 전달
-                pathType: Prefix
-                backend:
-                service:
-                    name: service2
-                    port:
-                        number: 80
+          paths:
+          - path: /service1  # example/service1은 service1로 전달
+            pathType: Prefix
+            backend:
+              service:
+                name: service1
+                port:
+                  number: 80
+          - path: /service2  # example/service1은 service1로 전달
+            pathType: Prefix
+            backend:
+              service:
+                name: service2
+                port:
+                  number: 80
     ```
 - 클라이언트 요청 처리 순서
     ```
@@ -265,6 +265,54 @@ spec:
     - 이 외에도 Kong, GKE 등의 솔루션이 있음
 - Nginx 인그레스 컨트롤러를 구성하면 자동으로 LoadBalancer 타입의 서비스가 생성됨
 
+
+### Gateway
+- **Ingress**는 HTTP/HTTPS 트래픽만 지원하고, 복잡한 라우팅·역할 분리·멀티 프로토콜 지원이 어렵고, 벤더별로 어노테이션 사용법이 달라 표준화에 한계
+- 외부 트래픽을 클러스터 내부 서비스로 안전하고 유연하게 전달하기 위한 **차세대 네트워크 표준 API**
+- **Gateway API**는 이런 문제를 해결하고, 서비스 메시·API Gateway·로드밸런서 등 다양한 네트워크 요구사항을 하나의 표준 구조로 통합하기 위해 등장
+
+#### 주요 특징
+- **L4~L7 트래픽 지원:** HTTP, HTTPS, TCP, TLS, UDP 등 다양한 프로토콜 라우팅 가능
+- **정교한 라우팅:** 경로, 헤더, 쿠키, 메소드 등 다양한 조건으로 트래픽 제어
+- **역할 기반 설계:** 클러스터 운영자, 개발자, 인프라 제공자 등 역할별로 리소스 관리 권한 분리
+- **확장성과 표준화:** 다양한 네트워크 컨트롤러(Envoy, Istio, NGINX 등)에서 동일한 API로 구현 가능
+- **CRD 기반:** Custom Resource로 선언적(Declarative) 관리가 가능해 Helm/Kustomize 등과 잘 연동됨
+
+<img src="https://gateway-api.sigs.k8s.io/images/resource-model.png">
+
+<img src="https://kubernetes.io/docs/images/gateway-request-flow.svg">
+
+#### 실제 사용 예시
+위 예시에서 Gateway는 80번 포트로 외부 트래픽을 받고, HTTPRoute는 `/app` 경로로 들어온 요청을 `my-service`로 라우팅함
+```yaml
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: Gateway
+metadata:
+  name: my-gateway
+spec:
+  gatewayClassName: my-gateway-class
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+
+---
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: HTTPRoute
+metadata:
+  name: my-route
+spec:
+  parentRefs:
+    - name: my-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /app
+      backendRefs:
+        - name: my-service
+          port: 80
+```
 
 ### DNS in Kubernetes
 - DNS 이름을 IP 주소로 해석하고, 서비스 및 Pod 간의 통신을 가능하게 함
