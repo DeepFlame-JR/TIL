@@ -346,3 +346,52 @@ helm install flannel --set podCidr="172.17.0.0/16" --namespace kube-flannel flan
 
 # deamonset args에 "- --iface=eth0" 추가
 ```
+
+## 12. Helm & Kusotmize
+- helm
+```bash
+helm search hub # 인터넷에 있는 전 세계의 공개 Helm 차트 전체를 검색
+helm search repo # 내 컴퓨터에 등록한 저장소(helm repo add로 추가한 곳)만 검색
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install amaze-surf bitnami/apache --version 18.3.6 # chart version
+
+helm rollback dazzling-web 3 # REVISION
+```
+
+- kustomize
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+```
+
+```yaml
+# patch 방법 1
+patches:
+  - target:
+      kind: Deployment
+      name: mongo-deployment
+    patch: |-
+      - op: remove
+        path: /spec/template/metadata/labels/org
+
+# patch 방법 2
+patches:
+  - label-patch.yaml
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - $patch: delete
+          name: memcached
+```
+
+```bash
+
+```
