@@ -30,22 +30,32 @@ CKA_0_Practice
       - kube-apiserver, kube-controller-manager, kube-scheduler, kubelet, kube-proxy
   1. API 서버 로그
       - sudo journalctl -u kube-apiserver
+      -
+- Woker Node (kubelet 고장)
+```bash
+sudo journalctl -u kubelet 
 
+vi /var/lib/kubelet/config.yaml
+vi /etc/kubernetes/kubelet.conf
+```
+- Network
+```bash
+# k describe po 내용
+## Failed to create pod sandbox: rpc error: code = Unknown desc = failed to setup network for sandbox "30890b3fd51a9fb788472228357a56f81c43b3c9fc20d4f9b2081d57fb65fff5": plugin type="weave-net" name="weave" failed (add): unable to allocate IP address: Post "http://127.0.0.1:6784/ip/30890b3fd51a9fb788472228357a56f81c43b3c9fc20d4f9b2081d57fb65fff5": dial tcp 127.0.0.1:6784: connect: connection refused
+
+# weave 설치
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+```
 
 
 ## 2. Core Concept
 
-```powershell
+```bash
 # 약어 확인
 kubectl api-resources
 
 kubectl apply -f <pod-definition.yaml>
 kubectl replace --force -f <pod-definition.yaml>  # edit 후에 적용이 안 된 /tmp/ 파일 대상
-
-# k create: 리소스 생성 명령어
-kubectl create pod my-pod --image=my-container-image
-kubectl create service clusterip my-service --tcp=80:8080
-kubectl create deployment my-deployment --image=my-container-image
 
 # k expose: deploy, pod 등 생성된 리소스를 외부에 노출하는 명령어 (svc를 생성하고, 외부 Pod와 매핑)
 kubectl expose deployment my-deployment --type=LoadBalancer --port=80 --target-port=8080
@@ -85,41 +95,6 @@ kubectl run --restart=Never --image=busybox static-busybox --dry-run=client -o y
 ssh node01
 vi /var/lib/kubelet/config.yaml # static pod 경로 확인
 ```
-
-
-## 5. Application Lifecycle Management
-
-```yaml
-# 롤링업데이트
-kubectl set image deployment <deployment-name> <container-name>=<new-image>
-
-# Command
-# yaml 파일에 command가 설정되어 있다면 덮어씀
-  containers:
-  - name: my-container
-    image: my-image
-    # case 1
-    command: ["sleep", "5000"]
-    # case2
-    command: ["echo", "Hello, Kubernetes!"]
-    # case3
-    command: ["echo"]
-    args: ["Hello, Kubernetes!"]
-
-# secret 생성
-kubectl create secret generic my-secret --from-literal=username=myuser --from-literal=password=mypassword
-
-# env 설정
-  containers:
-    - name: my-container
-      image: my-image
-      envFrom:
-        - secretRef:
-            name: my-secret
-        - configMapRef:
-            name: my-configmap
-```
-
 
 ## 6. Cluster Maintenance
 - 노드 활성화/비활성화
@@ -392,6 +367,79 @@ spec:
           name: memcached
 ```
 
-```bash
 
+## Mock Exam
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mc-pod
+  namespace: mc-namespace
+spec:
+  containers:
+  - name: mc-pod-1
+    image: nginx:1-alpine
+    env:
+    - name: NODE_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
+  - name: mc-pod-2
+    image: busybox:1
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do date > /var/log/shared/date.log; sleep 1;done"]
+    volumeMounts:
+    - mountPath: /var/log/shared
+      name: cache-volume
+  - name: mc-pod-3
+    image: busybox:1
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do cat /var/log/shared/date.log; sleep 1;done"]
+    volumeMounts:
+    - mountPath: /var/log/shared
+      name: cache-volume
+  volumes:
+  - name: cache-volume
+    emptyDir:
+      sizeLimit: 500Mi
+```
+
+```bash
+ssh node01
+sudo su
+sudo dpkg -i cri-docker_0.3.16.3-0.debian.deb 
+```
+
+```bash
+k expose pod messaging --port=6379 --name=messaging-service
+kubectl expose deployment/hr-web-app --type="NodePort" --port 8080 --name=hr-web-app-service
+kubectl expose pod nginx-resolver --name=nginx-resolver-service --port=80 --target-port=80 --type=ClusterIP
+
+kubectl run test-nslookup --image=busybox:1.28 --rm -it --restart=Never -- nslookup nginx-resolver-service
+```
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: webapp-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: kkapp-deploy
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
 ```
