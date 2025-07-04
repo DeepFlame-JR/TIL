@@ -117,11 +117,21 @@ sudo apt-cache madison kubeadm
 # 업그레이드 버전 확인
 kubeadm upgrade plan 
 
-k drain/cordon controlplane 
-kubeadm upgrade apply v1.xx.x  # 마스터노드 업그레이드
+# kubeadm 업그레이드
+sudo apt-mark unhold kubeadm && \
+sudo apt-get update && sudo apt-get install -y kubeadm='1.32.0-1.1' && \
+sudo apt-mark hold kubeadm
 
+#kubectl, kubelet 업그레이드 
+sudo apt-mark unhold kubelet kubectl && \
+sudo apt-get update && sudo apt-get install -y kubelet='1.32.0-1.1' kubectl='1.32.0-1.1' && \
+sudo apt-mark hold kubelet kubectl
+
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+# 워커노드에서도 똑같이
 ssh node01
-kubeadm upgrade node
 ```
 
 - Backup & Restore
@@ -129,7 +139,7 @@ kubeadm upgrade node
 #-- etcd 환경 변수는 command에 있음
 k describe po -n kube-system {etcd pod}
 
-# 이 URL을 통해 클라이언트는 etcd 서버에 접속하여 데이터를 조회하거나 변경
+# 이 URL을 통해 클라이언트는 etcd 서버에 접속하여 데이터를 조회하거나 변경 (2379가 etcd 포트임)
 --listen-client-urls=https://127.0.0.1:2379,https://192.14.117.9:2379
 # 메트릭을 수집하는 URL. 메트릭 정보는 모니터링과 성능 관련 용도로 사용.
 --listen-metrics-urls=http://127.0.0.1:2381
@@ -303,8 +313,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 5. Worker Node에 설정
 ```bash
 ssh node01
-kubeadm join 192.168.183.205:6443 --token ccd9i6.a09xzbykkpkyuuhd \
-        --discovery-token-ca-cert-hash sha256:05571bcee1e16cd267d676ed3ea9483f9e6a6038392c2aacd9b2a1d7430e1ea2
+kubeadm token create --print-join-command # 여기서 나온 join 명령어를 입력하면 됨
 ```
 
 6. CNI 설치
@@ -370,6 +379,7 @@ spec:
 
 ## Mock Exam
 
+### Pod 관련
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -405,33 +415,63 @@ spec:
       sizeLimit: 500Mi
 ```
 
-```bash
-ssh node01
-sudo su
-sudo dpkg -i cri-docker_0.3.16.3-0.debian.deb 
+```yaml
+      affinity:                                             # add
+        podAntiAffinity:                                    # add
+          requiredDuringSchedulingIgnoredDuringExecution:   # add
+          - labelSelector:                                  # add
+              matchExpressions:                             # add
+              - key: id                                     # add
+                operator: In                                # add
+                values:                                     # add
+                - very-important                            # add
+            topologyKey: kubernetes.io/hostname             # add
 ```
 
+```bash
+# resources가 없으면 node 리소스가 없을 때 가장 먼저 삭제됨
+k get pods -n project-c13 -o jsonpath="{range .items[*]}{.metadata.name} {.status.qosClass}{'\n'}"
+```
+
+```bash
+curl -k https://kubernetes.default/api/v1/secrets -H "Authorization: Bearer ${TOKEN}"
+```
+
+### 선언형 명령어
+https://kubernetes.io/docs/reference/kubectl/quick-reference/
 ```bash
 k expose pod messaging --port=6379 --name=messaging-service
 kubectl expose deployment/hr-web-app --type="NodePort" --port 8080 --name=hr-web-app-service
 kubectl expose pod nginx-resolver --name=nginx-resolver-service --port=80 --target-port=80 --type=ClusterIP
+```
+
+```bash
+kubectl run test-nslookup --image=busybox:1.28 --rm -it --restart=Never -- nslookup nginx-resolver-service
+
+kubectl run nginx-resolver --image=nginx
+kubectl expose pod nginx-resolver --name=nginx-resolver-service --port=80 --target-port=80 --type=ClusterIP
 
 kubectl run test-nslookup --image=busybox:1.28 --rm -it --restart=Never -- nslookup nginx-resolver-service
+kubectl run test-nslookup --image=busybox:1.28 --rm -it --restart=Never -- nslookup nginx-resolver-service > /root/CKA/nginx.svc
+
+kubectl get pod nginx-resolver -o wide
+kubectl run test-nslookup --image=busybox:1.28 --rm -it --restart=Never -- nslookup <P-O-D-I-P.default.pod> > /root/CKA/nginx.pod
+```
+
+### Autoscale
+```bash
+kubectl autoscale deployment <name> --cpu-percent=50 --min=1 --max=5 --dry-run=client -o yaml
 ```
 
 ```yaml
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
-metadata:
-  name: webapp-hpa
-  namespace: default
-spec:
-  scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: kkapp-deploy
-  minReplicas: 2
-  maxReplicas: 10
+  metrics:
+  - type: Pods
+    pods:
+      metric:
+        name: requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"
   metrics:
   - type: Resource
     resource:
@@ -439,7 +479,91 @@ spec:
       target:
         type: Utilization
         averageUtilization: 50
-  behavior:
-    scaleDown:
-      stabilizationWindowSeconds: 300
+```
+
+### Gateway
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: web-gateway
+  namespace: cka5673
+spec:
+  gatewayClassName: kodekloud
+  listeners:
+    - name: https
+      protocol: HTTPS
+      port: 443
+      ###
+      hostname: kodekloud.com
+      tls:
+        certificateRefs:
+          - name: kodekloud-tls
+```
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: np-backend
+  namespace: project-snake
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Egress                    # policy is only about Egress
+  egress:
+    - to:                           # first condition "to"
+      - podSelector:
+          matchLabels:
+            app: db1
+      ports:                        # second condition "port"
+      - protocol: TCP
+        port: 1111
+    - to:                           # first condition "to"
+      - podSelector:
+          matchLabels:
+            app: db2
+      ports:                        # second condition "port"
+      - protocol: TCP
+        port: 2222
+```
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: traffic-director
+  namespace: project-r500
+spec:
+  parentRefs:
+    - name: main
+  hostnames:
+    - "r500.gateway"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /auto
+          headers:
+          - type: Exact
+            name: user-agent
+            value: mobile
+      backendRefs:
+        - name: web-mobile
+          port: 80
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /auto
+      backendRefs:
+        - name: web-desktop
+          port: 80
+```
+
+### crictl
+```bash
+crictl inspect
+crictl ps
 ```
