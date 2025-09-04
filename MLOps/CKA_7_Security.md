@@ -137,6 +137,10 @@ Kubernetes는 **독자적인 PKI(Public Key Infrastructure)**를 구성하여 �
 - 역할: ETCD 전용 인증서 서명 및 관리
 - 이유: ETCD는 별도의 CA를 사용하여 보안을 강화합니다
 
+#### kubelet CA
+- 위치: /var/lib/kubelet/pki/kubelet-client-current.pem, /var/lib/kubelet/pki/kubelet.crt
+
+
 ### 인증서 분류
 
 #### Server 인증서

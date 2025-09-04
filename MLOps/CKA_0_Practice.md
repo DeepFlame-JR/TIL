@@ -6,9 +6,10 @@ CKA_0_Practice
 - `/etc/kubernetes`
   - 마스터 노드에서 사용되는 Kubernetes 구성 파일들이 위치하는 디렉토리
   - API 서버, 컨트롤러 매니저, 스케줄러 등의 구성 파일과 인증서, kubeconfig 파일 등이 저장
+  - StaticPod의 정의 파일들이 있는 `/etc/kubernetes/manifests` 디렉토리와 컨테이너의 데이터를 저장하는 containers 디렉토리 등이 포함
 - `/var/lib/kubelet`
   - 워커 노드에서 kubelet이 실행되며 관리하는 리소스들이 위치하는 디렉토리
-  - StaticPod의 정의 파일들이 있는 `/etc/kubernetes/manifests` 디렉토리와 컨테이너의 데이터를 저장하는 containers 디렉토리 등이 포함
+  - kubelet은 프로세스로 관리됨
 - `/var/lib/etcd`
   - 마스터 노드에서 etcd 데이터베이스가 저장되는 디렉토리
 - `/var/log/kubernetes`
@@ -22,16 +23,20 @@ CKA_0_Practice
 
 ### Trouble Shooting
 - Application Failure
-  1. `curl http://ip:port`
-  1. `k describe svc web-service`
-      - Service의 selector와 pod의 label이 일치하는지 확인
+```bash
+curl http://ip:port
+k describe svc web-service # Service의 selector와 pod의 label이 일치하는지 확인
+```
 - Control Plane
-  1. status 확인 `service <service-name> status`
-      - kube-apiserver, kube-controller-manager, kube-scheduler, kubelet, kube-proxy
-  1. API 서버 로그
-      - sudo journalctl -u kube-apiserver
-      -
-- Woker Node (kubelet 고장)
+```bash
+# Status 확인
+# kube-apiserver, kube-controller-manager, kube-scheduler, kubelet, kube-proxy
+service <service-name> status
+
+# Api Server 로그
+sudo journalctl -u kube-apiserver
+```
+- Woker Node (kubelet 고장 / Worker 노드는 kubelet 고장이 대표적)
 ```bash
 sudo journalctl -u kubelet 
 
@@ -91,9 +96,9 @@ kubectl taint nodes node1 key1=value1:NoSchedule-
 # command -- sleep 1000: sleep 1000 명령어 실행
 kubectl run --restart=Never --image=busybox static-busybox --dry-run=client -o yaml --command -- sleep 1000 > /etc/kubernetes/manifests/static-busybox.yaml
 
-# 다른 노드에 있는 static pod 경로
+# 다른 노드에 있는 kubelet 경로
 ssh node01
-vi /var/lib/kubelet/config.yaml # static pod 경로 확인
+vi /var/lib/kubelet/config.yaml # kubelet 경로 확인
 ```
 
 ## 6. Cluster Maintenance
@@ -110,17 +115,24 @@ k uncordon node-1  # 노드 재부팅 (새로운 Pod부터 예약됨)
 # K8s 버전 업그레이드
 (https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/#upgrading-control-plane-nodes)
 
-# kubeadm/kubectl 업그레이드
+# kubeadm/kubectl 업그레이드 버전 확인
 sudo apt update
 sudo apt-cache madison kubeadm
 
-# 업그레이드 버전 확인
+# k8s 업그레이드 버전 확인
 kubeadm upgrade plan 
 
 # kubeadm 업그레이드
 sudo apt-mark unhold kubeadm && \
 sudo apt-get update && sudo apt-get install -y kubeadm='1.32.0-1.1' && \
 sudo apt-mark hold kubeadm
+
+kubeadm version
+sudo kubeadm upgrade plan
+sudo kubeadm upgrade apply v1.31.x
+
+# drain node
+kubectl drain <node-to-drain> --ignore-daemonsets
 
 #kubectl, kubelet 업그레이드 
 sudo apt-mark unhold kubelet kubectl && \
@@ -310,7 +322,7 @@ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
-5. Worker Node에 설정
+5. Worker Node 추가
 ```bash
 ssh node01
 kubeadm token create --print-join-command # 여기서 나온 join 명령어를 입력하면 됨
@@ -343,12 +355,6 @@ helm install amaze-surf bitnami/apache --version 18.3.6 # chart version
 helm rollback dazzling-web 3 # REVISION
 ```
 
-- kustomize
-```yaml
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-```
-
 ```yaml
 # patch 방법 1
 patches:
@@ -359,6 +365,7 @@ patches:
       - op: remove
         path: /spec/template/metadata/labels/org
 
+---
 # patch 방법 2
 patches:
   - label-patch.yaml
@@ -416,16 +423,15 @@ spec:
 ```
 
 ```yaml
-      affinity:                                             # add
-        podAntiAffinity:                                    # add
-          requiredDuringSchedulingIgnoredDuringExecution:   # add
-          - labelSelector:                                  # add
-              matchExpressions:                             # add
-              - key: id                                     # add
-                operator: In                                # add
-                values:                                     # add
-                - very-important                            # add
-            topologyKey: kubernetes.io/hostname             # add
+# 같은 라벨이 있는 pod는 분산시켜서 배포하라
+spec:
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        foo: bar
 ```
 
 ```bash
@@ -434,6 +440,7 @@ k get pods -n project-c13 -o jsonpath="{range .items[*]}{.metadata.name} {.statu
 ```
 
 ```bash
+# curl 명령어를 통한 데이터 접근
 curl -k https://kubernetes.default/api/v1/secrets -H "Authorization: Bearer ${TOKEN}"
 ```
 
@@ -456,6 +463,19 @@ kubectl run test-nslookup --image=busybox:1.28 --rm -it --restart=Never -- nsloo
 
 kubectl get pod nginx-resolver -o wide
 kubectl run test-nslookup --image=busybox:1.28 --rm -it --restart=Never -- nslookup <P-O-D-I-P.default.pod> > /root/CKA/nginx.pod
+```
+
+### dns
+```bash
+# headless svc dns
+spec:
+  hostname: section100  # set hostname
+  subdomain: section    # set subdomain to same name as service
+
+$ nslookup section200.section.lima-workload.svc.cluster.local
+
+# pod dns
+172-17-0-3.default.pod.cluster.local
 ```
 
 ### Autoscale
